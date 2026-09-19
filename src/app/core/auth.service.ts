@@ -30,6 +30,17 @@ export class AuthService {
     return error ? translateAuthError(error.message) : null;
   }
 
+  /**
+   * Zakłada konto. Baza przyjmuje tylko pierwsze konto (właściciela) i od razu je potwierdza,
+   * więc po rejestracji logujemy się bez klikania linku z e-maila.
+   */
+  async signUp(email: string, password: string): Promise<string | null> {
+    const { data, error } = await this.supabase.auth.signUp({ email, password });
+    if (error) return translateAuthError(error.message);
+    if (data.session) return null;
+    return this.signIn(email, password);
+  }
+
   async signOut(): Promise<void> {
     await this.supabase.auth.signOut();
   }
@@ -40,5 +51,10 @@ export function translateAuthError(message: string): string {
   if (m.includes('invalid login credentials')) return 'Nieprawidłowy e-mail lub hasło.';
   if (m.includes('email not confirmed')) return 'Konto nie zostało potwierdzone. Potwierdź je w panelu Supabase.';
   if (m.includes('fetch') || m.includes('network')) return 'Brak połączenia z serwerem. Sprawdź internet.';
+  if (m.includes('database error saving new user') || m.includes('menuvibe_signup_closed'))
+    return 'Konto właściciela już istnieje. Zaloguj się.';
+  if (m.includes('user already registered')) return 'To konto już istnieje. Zaloguj się.';
+  if (m.includes('password should be')) return 'Hasło jest za słabe – użyj co najmniej 8 znaków.';
+  if (m.includes('rate limit')) return 'Za dużo prób. Odczekaj chwilę i spróbuj ponownie.';
   return message;
 }

@@ -7,6 +7,9 @@ describe('translateAuthError', () => {
   it('tłumaczy brak sieci', () => {
     expect(translateAuthError('Failed to fetch')).toContain('Brak połączenia');
   });
+  it('tłumaczy zamkniętą rejestrację', () => {
+    expect(translateAuthError('Database error saving new user')).toContain('już istnieje');
+  });
   it('zostawia nieznane komunikaty', () => {
     expect(translateAuthError('coś innego')).toBe('coś innego');
   });

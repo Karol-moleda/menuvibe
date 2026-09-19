@@ -1,7 +1,13 @@
 <ion-content class="ion-padding">
   <main class="login">
     <h1>MenuVibe</h1>
-    <p class="subtitle">Twój plan diety i kalorie w jednym miejscu.</p>
+    <p class="subtitle">
+      @if (mode() === 'login') {
+        Zaloguj się do swojego planu diety.
+      } @else {
+        Załóż konto. Aplikacja ma jednego właściciela – po rejestracji kolejne konta są blokowane.
+      }
+    </p>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
       <ion-list lines="full">
@@ -21,9 +27,9 @@
             label="Hasło"
             labelPlacement="stacked"
             type="password"
-            autocomplete="current-password"
+            [autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'"
             formControlName="password"
-            errorText="Hasło ma co najmniej 6 znaków"
+            errorText="Hasło ma co najmniej 8 znaków"
           >
             <ion-input-password-toggle slot="end" />
           </ion-input>
@@ -38,13 +44,17 @@
 
       <ion-button expand="block" type="submit" [disabled]="loading()">
         @if (loading()) {
-          <ion-spinner name="crescent" aria-label="Logowanie" />
-        } @else {
+          <ion-spinner name="crescent" aria-label="Proszę czekać" />
+        } @else if (mode() === 'login') {
           Zaloguj
+        } @else {
+          Załóż konto
         }
       </ion-button>
     </form>
 
-    <ion-note>Konto zakładasz w panelu Supabase (Authentication → Users).</ion-note>
+    <ion-button class="switch" expand="block" fill="clear" (click)="toggleMode()">
+      {{ mode() === 'login' ? 'Nie masz konta? Załóż je' : 'Masz już konto? Zaloguj się' }}
+    </ion-button>
   </main>
 </ion-content>

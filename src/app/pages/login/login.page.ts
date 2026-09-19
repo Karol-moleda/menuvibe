@@ -8,7 +8,6 @@ import {
   IonInputPasswordToggle,
   IonList,
   IonItem,
-  IonNote,
   IonSpinner,
   IonText,
 } from '@ionic/angular';
@@ -26,7 +25,6 @@ import { AuthService } from '../../core/auth.service';
     IonButton,
     IonSpinner,
     IonText,
-    IonNote,
   ],
   styleUrl: './login.page.scss',
   templateUrl: './login.page.html',
@@ -35,13 +33,20 @@ export class LoginPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  /** 'login' albo 'signup' – rejestracja działa tylko dla pierwszego konta */
+  readonly mode = signal<'login' | 'signup'>('login');
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup({
     email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
-    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(6)] }),
+    password: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(8)] }),
   });
+
+  toggleMode(): void {
+    this.mode.update((m) => (m === 'login' ? 'signup' : 'login'));
+    this.error.set(null);
+  }
 
   async submit(): Promise<void> {
     if (this.form.invalid || this.loading()) {
@@ -51,7 +56,10 @@ export class LoginPage {
     this.loading.set(true);
     this.error.set(null);
     const { email, password } = this.form.getRawValue();
-    const error = await this.auth.signIn(email.trim(), password);
+    const error =
+      this.mode() === 'signup'
+        ? await this.auth.signUp(email.trim(), password)
+        : await this.auth.signIn(email.trim(), password);
     this.loading.set(false);
     if (error) {
       this.error.set(error);

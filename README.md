@@ -28,9 +28,8 @@ supabase link --project-ref taogexnjmdntnniolute   # poprosi o hasło do bazy
 supabase db push           # tworzy tabele i reguły RLS
 ```
 
-Konto użytkownika: w panelu Supabase **Authentication → Users → Add user → Create new user**,
-zaznacz **Auto Confirm User**. Potem w **Authentication → Sign In / Providers** wyłącz
-**Allow new users to sign up**, żeby nikt inny nie mógł założyć konta.
+Konto: przy pierwszym uruchomieniu wybierz „Nie masz konta? Załóż je”. Baza przyjmuje tylko
+pierwsze konto (od razu potwierdzone), a każdą kolejną rejestrację odrzuca.
 
 ## Uruchomienie w przeglądarce
 
