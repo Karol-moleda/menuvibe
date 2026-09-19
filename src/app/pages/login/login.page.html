@@ -1,0 +1,50 @@
+<ion-content class="ion-padding">
+  <main class="login">
+    <h1>MenuVibe</h1>
+    <p class="subtitle">Twój plan diety i kalorie w jednym miejscu.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <ion-list lines="full">
+        <ion-item>
+          <ion-input
+            label="E-mail"
+            labelPlacement="stacked"
+            type="email"
+            autocomplete="email"
+            inputmode="email"
+            formControlName="email"
+            errorText="Podaj poprawny e-mail"
+          />
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Hasło"
+            labelPlacement="stacked"
+            type="password"
+            autocomplete="current-password"
+            formControlName="password"
+            errorText="Hasło ma co najmniej 6 znaków"
+          >
+            <ion-input-password-toggle slot="end" />
+          </ion-input>
+        </ion-item>
+      </ion-list>
+
+      @if (error(); as message) {
+        <ion-text color="danger" role="alert">
+          <p>{{ message }}</p>
+        </ion-text>
+      }
+
+      <ion-button expand="block" type="submit" [disabled]="loading()">
+        @if (loading()) {
+          <ion-spinner name="crescent" aria-label="Logowanie" />
+        } @else {
+          Zaloguj
+        }
+      </ion-button>
+    </form>
+
+    <ion-note>Konto zakładasz w panelu Supabase (Authentication → Users).</ion-note>
+  </main>
+</ion-content>

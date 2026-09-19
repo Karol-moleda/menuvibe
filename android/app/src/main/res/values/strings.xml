@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MenuVibe</string>
+    <string name="title_activity_main">MenuVibe</string>
+    <string name="package_name">pl.karol.menuvibe</string>
+    <string name="custom_url_scheme">pl.karol.menuvibe</string>
+</resources>

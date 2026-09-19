@@ -1,0 +1,17 @@
+import { Routes } from '@angular/router';
+import { TabsPage } from './tabs.page';
+
+export const tabsRoutes: Routes = [
+  {
+    path: '',
+    component: TabsPage,
+    children: [
+      { path: 'dzis', loadComponent: () => import('../today/today.page').then((m) => m.TodayPage) },
+      { path: 'tydzien', loadComponent: () => import('../week/week.page').then((m) => m.WeekPage) },
+      { path: 'przepisy', loadComponent: () => import('../recipes/recipes.page').then((m) => m.RecipesPage) },
+      { path: 'czat', loadComponent: () => import('../chat/chat.page').then((m) => m.ChatPage) },
+      { path: 'profil', loadComponent: () => import('../profile/profile.page').then((m) => m.ProfilePage) },
+      { path: '', pathMatch: 'full', redirectTo: 'dzis' },
+    ],
+  },
+];
