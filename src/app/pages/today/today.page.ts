@@ -1,7 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
+  ActionSheetController,
+  AlertController,
   IonBadge,
   IonButton,
   IonCard,
@@ -11,12 +13,34 @@ import {
   IonCardTitle,
   IonContent,
   IonHeader,
+  IonIcon,
+  IonItem,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonProgressBar,
+  IonRefresher,
+  IonRefresherContent,
   IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
+  RefresherCustomEvent,
+  ToastController,
+  ViewWillEnter,
 } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { addCircleOutline, checkmarkCircle, ellipseOutline, waterOutline } from 'ionicons/icons';
 import { BodyStore } from '../../core/body.store';
+import { DiaryStore } from '../../core/diary.store';
+import { MealPlanItemRow, MealSlot } from '../../core/database.types';
+import { todayIso } from '../../core/nutrition';
+import { PlanStore } from '../../core/plan.store';
+import { SLOTS, SLOT_LABELS } from '../../core/planner';
+import { RecipeStore } from '../../core/recipe.store';
 import { TREND_LABELS, signed } from '../../shared/labels';
 
 @Component({
@@ -28,92 +52,197 @@ import { TREND_LABELS, signed } from '../../shared/labels';
     IonToolbar,
     IonTitle,
     IonContent,
+    IonRefresher,
+    IonRefresherContent,
     IonCard,
     IonCardHeader,
     IonCardSubtitle,
     IonCardTitle,
     IonCardContent,
+    IonList,
+    IonItem,
+    IonItemSliding,
+    IonItemOptions,
+    IonItemOption,
+    IonLabel,
+    IonNote,
     IonBadge,
     IonButton,
+    IonIcon,
+    IonProgressBar,
     IonText,
     IonSpinner,
   ],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Dziś</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      @if (!body.loaded()) {
-        <div class="center"><ion-spinner name="crescent" aria-label="Ładowanie" /></div>
-      } @else if (!body.currentTarget()) {
-        <ion-card color="light">
-          <ion-card-header>
-            <ion-card-title>Zacznijmy od Twoich danych</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p>Podaj wzrost, wiek, aktywność i wagę – policzę dzienne zapotrzebowanie i cel na redukcję.</p>
-            <ion-button routerLink="/profil" expand="block">Przejdź do profilu</ion-button>
-          </ion-card-content>
-        </ion-card>
-      } @else {
-        @let t = body.currentTarget()!;
-        @let trend = body.trend();
-        <ion-card>
-          <ion-card-header>
-            <ion-card-subtitle>Cel na dziś</ion-card-subtitle>
-            <ion-card-title class="kcal">{{ t.kcal }} <small>kcal</small></ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="macros">
-              <span class="macro protein"><strong>{{ t.protein_g }} g</strong> B</span>
-              <span class="macro carbs"><strong>{{ t.carbs_g }} g</strong> W</span>
-              <span class="macro fat"><strong>{{ t.fat_g }} g</strong> T</span>
-            </div>
-          </ion-card-content>
-        </ion-card>
-
-        <ion-card routerLink="/profil" button>
-          <ion-card-header>
-            <ion-card-subtitle>Redukcja</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="trend">
-              <ion-badge [color]="labels[trend.status].color">{{ labels[trend.status].label }}</ion-badge>
-              @if (trend.average !== null) {
-                <span>{{ trend.average | number: '1.1-1' }} kg średnio</span>
-              }
-              @if (trend.weeklyChangeKg !== null) {
-                <span>· {{ signed(trend.weeklyChangeKg, 2) }} kg/tydz.</span>
-              }
-            </div>
-            @if (body.latestWeight()?.date !== body.today()) {
-              <ion-text color="medium"><p>Nie ważyłeś się dziś – dotknij, żeby dodać pomiar.</p></ion-text>
-            }
-          </ion-card-content>
-        </ion-card>
-
-        <ion-text color="medium">
-          <p class="ion-padding-horizontal">Dziennik posiłków, bilans kcal i woda pojawią się w etapie 3.</p>
-        </ion-text>
-      }
-    </ion-content>
-  `,
-  styles: `
-    .center { display: flex; justify-content: center; padding: 48px; }
-    .kcal { font-size: 2.25rem; font-weight: 700; }
-    .kcal small { font-size: 1rem; font-weight: 400; color: var(--ion-color-medium); }
-    .macros { display: flex; gap: 16px; }
-    .macro { padding-left: 10px; border-left: 4px solid; }
-    .macro.protein { border-color: var(--mv-protein); }
-    .macro.carbs { border-color: var(--mv-carbs); }
-    .macro.fat { border-color: var(--mv-fat); }
-    .trend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  `,
+  templateUrl: './today.page.html',
+  styleUrl: './today.page.scss',
 })
-export class TodayPage {
+export class TodayPage implements ViewWillEnter {
   protected readonly body = inject(BodyStore);
+  protected readonly diary = inject(DiaryStore);
+  private readonly plan = inject(PlanStore);
+  private readonly recipes = inject(RecipeStore);
+  private readonly router = inject(Router);
+  private readonly sheet = inject(ActionSheetController);
+  private readonly alert = inject(AlertController);
+  private readonly toast = inject(ToastController);
+
   protected readonly labels = TREND_LABELS;
+  protected readonly slotLabels = SLOT_LABELS;
   protected readonly signed = signed;
+  protected readonly round = Math.round;
+
+  protected readonly planned = signal<MealPlanItemRow[]>([]);
+  protected readonly busy = signal(false);
+
+  protected readonly target = computed(() => this.body.currentTarget());
+
+  protected readonly progress = computed(() => {
+    const t = this.target();
+    const eaten = this.diary.totals();
+    if (!t) return null;
+    const bar = (v: number, max: number) => ({ value: Math.round(v), max, ratio: max ? Math.min(1, v / max) : 0, over: v > max * 1.05 });
+    return {
+      kcal: bar(eaten.kcal, t.kcal),
+      remaining: t.kcal - eaten.kcal,
+      protein: bar(eaten.protein_g, t.protein_g),
+      carbs: bar(eaten.carbs_g, t.carbs_g),
+      fat: bar(eaten.fat_g, t.fat_g),
+    };
+  });
+
+  protected readonly meals = computed(() => {
+    const byId = this.recipes.byId();
+    const entries = this.diary.bySlot();
+    return SLOTS.map((slot) => {
+      const item = this.planned().find((p) => p.slot === slot) ?? null;
+      const recipe = item ? byId.get(item.recipe_id) ?? null : null;
+      const logged = entries.get(slot) ?? [];
+      const plannedEaten = !!item && logged.some((e) => e.recipe_id === item.recipe_id);
+      return {
+        slot,
+        entries: logged,
+        kcal: logged.reduce((s, e) => s + e.kcal, 0),
+        planned: item && recipe && !plannedEaten ? { item, recipe, kcal: Math.round(recipe.kcal * Number(item.portion_factor)) } : null,
+      };
+    });
+  });
+
+  protected readonly waterGoal = computed(() => this.body.profile()?.water_goal_ml ?? 3000);
+
+  constructor() {
+    addIcons({ addCircleOutline, checkmarkCircle, ellipseOutline, waterOutline });
+  }
+
+  ionViewWillEnter(): void {
+    void this.refresh();
+  }
+
+  async refresh(event?: RefresherCustomEvent): Promise<void> {
+    try {
+      const today = todayIso();
+      await Promise.all([this.diary.load(today), this.recipes.load(), this.loadPlanned(today)]);
+    } catch (e) {
+      await this.showToast(errorMessage(e), 'danger');
+    } finally {
+      await event?.target.complete();
+    }
+  }
+
+  private async loadPlanned(date: string): Promise<void> {
+    this.planned.set(await this.plan.itemsForDate(date));
+  }
+
+  async eatPlanned(meal: { item: MealPlanItemRow }): Promise<void> {
+    const recipe = this.recipes.byId().get(meal.item.recipe_id);
+    if (!recipe) return;
+    await this.run(() => this.diary.addRecipe(recipe, meal.item.slot, Number(meal.item.portion_factor)));
+  }
+
+  openPlanned(item: MealPlanItemRow): void {
+    void this.router.navigate(['/przepisy', item.recipe_id], {
+      queryParams: { slot: item.slot, servings: Number(item.portion_factor), add: 1 },
+    });
+  }
+
+  async addTo(slot: MealSlot): Promise<void> {
+    const sheet = await this.sheet.create({
+      header: `Dodaj – ${SLOT_LABELS[slot]}`,
+      buttons: [
+        { text: 'Z przepisów', handler: () => void this.router.navigate(['/przepisy'], { queryParams: { slot } }) },
+        { text: 'Szybki wpis (nazwa i kcal)', handler: () => void this.quickAdd(slot) },
+        { text: 'Anuluj', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async quickAdd(slot: MealSlot): Promise<void> {
+    const alert = await this.alert.create({
+      header: `Szybki wpis – ${SLOT_LABELS[slot]}`,
+      inputs: [
+        { name: 'name', type: 'text', placeholder: 'Co zjadłeś? np. batonik' },
+        { name: 'kcal', type: 'number', placeholder: 'kcal', min: 0 },
+        { name: 'protein', type: 'number', placeholder: 'białko g (opcjonalnie)' },
+        { name: 'carbs', type: 'number', placeholder: 'węglowodany g (opcjonalnie)' },
+        { name: 'fat', type: 'number', placeholder: 'tłuszcz g (opcjonalnie)' },
+      ],
+      buttons: [
+        { text: 'Anuluj', role: 'cancel' },
+        {
+          text: 'Dodaj',
+          handler: (v: { name: string; kcal: string; protein: string; carbs: string; fat: string }) => {
+            const kcal = Number(v.kcal);
+            if (!v.name?.trim() || !Number.isFinite(kcal) || kcal < 0) return false;
+            void this.run(() =>
+              this.diary.add({
+                slot,
+                kind: 'manual',
+                name: v.name.trim(),
+                kcal: Math.round(kcal),
+                protein_g: Number(v.protein) || 0,
+                carbs_g: Number(v.carbs) || 0,
+                fat_g: Number(v.fat) || 0,
+              }),
+            );
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.run(() => this.diary.remove(id));
+  }
+
+  async addWater(ml: number): Promise<void> {
+    await this.run(() => this.diary.addWater(ml));
+  }
+
+  async undoWater(): Promise<void> {
+    await this.run(() => this.diary.undoWater());
+  }
+
+  private async run(action: () => Promise<unknown>): Promise<void> {
+    this.busy.set(true);
+    try {
+      await action();
+    } catch (e) {
+      await this.showToast(errorMessage(e), 'danger');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  private async showToast(message: string, color: 'success' | 'danger' = 'success'): Promise<void> {
+    const t = await this.toast.create({ message, duration: 3000, color, position: 'top' });
+    await t.present();
+  }
+}
+
+function errorMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (e && typeof e === 'object' && 'message' in e) return String((e as { message: unknown }).message);
+  return 'Nieznany błąd';
 }

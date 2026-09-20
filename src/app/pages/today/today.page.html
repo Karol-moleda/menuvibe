@@ -1,0 +1,154 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Dziś</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  @if (!body.loaded()) {
+    <div class="center"><ion-spinner name="crescent" aria-label="Ładowanie" /></div>
+  } @else if (!target()) {
+    <ion-card color="light">
+      <ion-card-header>
+        <ion-card-title>Zacznijmy od Twoich danych</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Podaj wzrost, wiek, aktywność i wagę – policzę dzienne zapotrzebowanie i cel na redukcję.</p>
+        <ion-button routerLink="/profil" expand="block">Przejdź do profilu</ion-button>
+      </ion-card-content>
+    </ion-card>
+  } @else {
+    @let p = progress()!;
+    <!-- bilans -->
+    <ion-card class="balance">
+      <ion-card-content>
+        <div class="kcal-row">
+          <div>
+            <div class="big">{{ p.kcal.value }}</div>
+            <div class="label">zjedzone</div>
+          </div>
+          <div class="center-col">
+            <div class="big" [class.over]="p.remaining < 0">{{ p.remaining < 0 ? '+' + -p.remaining : p.remaining }}</div>
+            <div class="label">{{ p.remaining < 0 ? 'ponad cel' : 'zostało kcal' }}</div>
+          </div>
+          <div class="right">
+            <div class="big">{{ p.kcal.max }}</div>
+            <div class="label">cel</div>
+          </div>
+        </div>
+        <ion-progress-bar [value]="p.kcal.ratio" [color]="p.kcal.over ? 'danger' : 'primary'" aria-label="Postęp kalorii" />
+
+        <div class="macros">
+          @for (m of [
+            { key: 'protein', label: 'Białko', v: p.protein },
+            { key: 'carbs', label: 'Węglowodany', v: p.carbs },
+            { key: 'fat', label: 'Tłuszcz', v: p.fat }
+          ]; track m.key) {
+            <div class="macro">
+              <div class="macro-head">
+                <span>{{ m.label }}</span>
+                <span>{{ m.v.value }}/{{ m.v.max }} g</span>
+              </div>
+              <div class="bar" [class]="m.key">
+                <div class="fill" [style.width.%]="m.v.ratio * 100"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- posiłki -->
+    @for (meal of meals(); track meal.slot) {
+      <ion-card class="meal">
+        <ion-card-header class="meal-head">
+          <ion-card-subtitle>{{ slotLabels[meal.slot] }}</ion-card-subtitle>
+          <span class="meal-kcal">{{ meal.kcal }} kcal</span>
+          <ion-button fill="clear" size="small" (click)="addTo(meal.slot)" [attr.aria-label]="'Dodaj do: ' + slotLabels[meal.slot]">
+            <ion-icon slot="icon-only" name="add-circle-outline" />
+          </ion-button>
+        </ion-card-header>
+
+        <ion-list lines="inset">
+          @if (meal.planned; as pl) {
+            <ion-item class="planned">
+              <ion-icon slot="start" name="ellipse-outline" color="medium" aria-hidden="true" />
+              <ion-label class="ion-text-wrap" (click)="openPlanned(pl.item)">
+                <p>Z planu</p>
+                <h3>{{ pl.recipe.name }}</h3>
+              </ion-label>
+              <ion-button slot="end" size="small" [disabled]="busy()" (click)="eatPlanned(pl)">Zjedzone · {{ pl.kcal }}</ion-button>
+            </ion-item>
+          }
+          @for (e of meal.entries; track e.id) {
+            <ion-item-sliding>
+              <ion-item>
+                <ion-icon slot="start" name="checkmark-circle" color="success" aria-hidden="true" />
+                <ion-label class="ion-text-wrap">
+                  <h3>{{ e.name }}</h3>
+                  <p>
+                    B {{ round(e.protein_g) }} · W {{ round(e.carbs_g) }} · T {{ round(e.fat_g) }}
+                    @if (e.servings && e.servings !== 1) {
+                      · {{ e.servings | number: '1.0-2' }} porcji
+                    }
+                  </p>
+                </ion-label>
+                <ion-note slot="end">{{ e.kcal }} kcal</ion-note>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="remove(e.id)">Usuń</ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+          @if (!meal.planned && !meal.entries.length) {
+            <ion-item lines="none"><ion-label color="medium"><p>Nic jeszcze nie dodano.</p></ion-label></ion-item>
+          }
+        </ion-list>
+      </ion-card>
+    }
+
+    <!-- woda -->
+    <ion-card>
+      <ion-card-header class="meal-head">
+        <ion-card-subtitle>Woda</ion-card-subtitle>
+        <span class="meal-kcal">{{ diary.waterMl() / 1000 | number: '1.1-2' }} / {{ waterGoal() / 1000 | number: '1.1-1' }} l</span>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-progress-bar [value]="diary.waterMl() / waterGoal()" color="tertiary" aria-label="Postęp wody" />
+        <div class="water-actions">
+          <ion-button size="small" fill="outline" [disabled]="busy()" (click)="addWater(250)">
+            <ion-icon slot="start" name="water-outline" />+250 ml
+          </ion-button>
+          <ion-button size="small" fill="outline" [disabled]="busy()" (click)="addWater(500)">
+            <ion-icon slot="start" name="water-outline" />+500 ml
+          </ion-button>
+          <ion-button size="small" fill="clear" [disabled]="busy() || !diary.water().length" (click)="undoWater()">Cofnij</ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- redukcja -->
+    @let trend = body.trend();
+    <ion-card routerLink="/profil" button>
+      <ion-card-content>
+        <div class="trend">
+          <strong>Redukcja</strong>
+          <ion-badge [color]="labels[trend.status].color">{{ labels[trend.status].label }}</ion-badge>
+          @if (trend.average !== null) {
+            <span>{{ trend.average | number: '1.1-1' }} kg</span>
+          }
+          @if (trend.weeklyChangeKg !== null) {
+            <span>· {{ signed(trend.weeklyChangeKg, 2) }} kg/tydz.</span>
+          }
+        </div>
+        @if (body.latestWeight()?.date !== body.today()) {
+          <ion-text color="medium"><p>Nie ważyłeś się dziś – dotknij, żeby dodać pomiar.</p></ion-text>
+        }
+      </ion-card-content>
+    </ion-card>
+  }
+</ion-content>

@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/przepisy" text="" />
+    </ion-buttons>
+    <ion-title>Przepis</ion-title>
+    @if (summary(); as r) {
+      <ion-buttons slot="end">
+        <ion-button (click)="rate(1)" [attr.aria-pressed]="r.rating > 0" aria-label="Lubię">
+          <ion-icon slot="icon-only" [name]="r.rating > 0 ? 'heart' : 'heart-outline'" [color]="r.rating > 0 ? 'danger' : undefined" />
+        </ion-button>
+        <ion-button (click)="rate(-1)" [attr.aria-pressed]="r.rating < 0" aria-label="Nie lubię">
+          <ion-icon slot="icon-only" [name]="r.rating < 0 ? 'thumbs-down' : 'thumbs-down-outline'" />
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (data.isLoading()) {
+    <div class="center"><ion-spinner name="crescent" aria-label="Ładowanie" /></div>
+  } @else if (data.error()) {
+    <ion-text color="danger"><p class="ion-padding">Nie udało się wczytać przepisu.</p></ion-text>
+  } @else if (data.value(); as d) {
+    @let s = scaled()!;
+    <section class="hero ion-padding">
+      <ion-badge color="light">{{ slotLabels[d.recipe.slot] }}</ion-badge>
+      @if (d.recipe.macros_estimated) {
+        <ion-badge color="warning">makro szacowane</ion-badge>
+      }
+      @if (d.recipe.rating < 0) {
+        <ion-badge color="medium">nie lubię – pomijany w planie</ion-badge>
+      }
+      <h1>{{ d.recipe.name }}</h1>
+
+      <div class="portion">
+        <ion-button fill="outline" size="small" (click)="changePortion(-0.1)" aria-label="Mniejsza porcja">
+          <ion-icon slot="icon-only" name="remove-outline" />
+        </ion-button>
+        <div class="portion-value">
+          <strong>{{ factor() | number: '1.1-2' }}</strong>
+          <span>{{ factor() === 1 ? 'porcja' : 'porcji' }}</span>
+        </div>
+        <ion-button fill="outline" size="small" (click)="changePortion(0.1)" aria-label="Większa porcja">
+          <ion-icon slot="icon-only" name="add-outline" />
+        </ion-button>
+      </div>
+
+      <div class="nutrition">
+        <div class="kcal"><strong>{{ s.kcal }}</strong> kcal</div>
+        <div class="macro protein"><strong>{{ s.protein }} g</strong> białko</div>
+        <div class="macro carbs"><strong>{{ s.carbs }} g</strong> węglow.</div>
+        <div class="macro fat"><strong>{{ s.fat }} g</strong> tłuszcz</div>
+      </div>
+      @if (d.recipe.servings > 1) {
+        <p class="note">Przepis jest na {{ d.recipe.servings }} porcje – składniki poniżej przeliczone na Twój talerz.</p>
+      }
+    </section>
+
+    <ion-list>
+      <ion-list-header><ion-label>Składniki</ion-label></ion-list-header>
+      @for (i of s.ingredients; track i.id) {
+        @if (i.grp && ($first || s.ingredients[$index - 1].grp !== i.grp)) {
+          <ion-item lines="none" class="group"><ion-label>{{ i.grp }}</ion-label></ion-item>
+        }
+        <ion-item>
+          <ion-label class="ion-text-wrap">{{ i.name }}</ion-label>
+          <ion-note slot="end">
+            {{ i.scaledAmount | number: '1.0-1' }} {{ i.unit }}
+            @if (i.showHousehold && i.household) {
+              <br /><small>{{ i.household }}</small>
+            }
+          </ion-note>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-list>
+      <ion-list-header><ion-label>Przygotowanie</ion-label></ion-list-header>
+      <ol class="steps">
+        @for (step of d.recipe.steps; track $index) {
+          <li>{{ step }}</li>
+        }
+      </ol>
+    </ion-list>
+
+    <div class="add ion-padding">
+      <ion-select label="Posiłek" labelPlacement="stacked" fill="outline" interface="popover" [value]="chosenSlot()" (ionChange)="targetSlot.set($event.detail.value)">
+        @for (sl of slots; track sl) {
+          <ion-select-option [value]="sl">{{ slotLabels[sl] }}</ion-select-option>
+        }
+      </ion-select>
+      <ion-button expand="block" [disabled]="saving()" (click)="addToDiary()">Zjadłem – dodaj do dziennika</ion-button>
+    </div>
+  }
+</ion-content>

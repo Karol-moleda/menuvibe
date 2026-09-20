@@ -1,0 +1,97 @@
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.hero {
+  ion-badge {
+    margin-right: 6px;
+  }
+
+  h1 {
+    margin: 8px 0 16px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+}
+
+.portion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.portion-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+
+  strong {
+    font-size: 1.3rem;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.nutrition {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  font-size: 0.85rem;
+
+  strong {
+    display: block;
+    font-size: 1.05rem;
+  }
+}
+
+.kcal strong {
+  color: var(--ion-color-primary);
+}
+
+.macro {
+  padding-left: 8px;
+  border-left: 4px solid;
+
+  &.protein { border-color: var(--mv-protein); }
+  &.carbs { border-color: var(--mv-carbs); }
+  &.fat { border-color: var(--mv-fat); }
+}
+
+.note {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+}
+
+ion-note {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.group ion-label {
+  font-weight: 600;
+  color: var(--ion-color-medium);
+}
+
+.steps {
+  margin: 0;
+  padding: 0 16px 0 36px;
+
+  li {
+    margin-bottom: 12px;
+    line-height: 1.45;
+  }
+}
+
+.add {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

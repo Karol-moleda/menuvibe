@@ -30,6 +30,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "recipes.json",
+                "input": "data",
+                "output": "data"
               }
             ],
             "styles": [

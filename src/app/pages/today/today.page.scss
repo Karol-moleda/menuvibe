@@ -1,0 +1,127 @@
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.kcal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: end;
+  margin-bottom: 10px;
+
+  .center-col {
+    text-align: center;
+  }
+
+  .right {
+    text-align: right;
+  }
+}
+
+.big {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+
+  .center-col & {
+    font-size: 2rem;
+    color: var(--ion-color-primary);
+  }
+
+  &.over {
+    color: var(--ion-color-danger) !important;
+  }
+}
+
+.label {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.macros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.macro-head {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+
+  span:first-child {
+    color: var(--ion-color-medium);
+  }
+
+  span:last-child {
+    font-weight: 600;
+    color: var(--ion-text-color);
+  }
+}
+
+.bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ion-color-light);
+  overflow: hidden;
+
+  .fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  &.protein .fill { background: var(--mv-protein); }
+  &.carbs .fill { background: var(--mv-carbs); }
+  &.fat .fill { background: var(--mv-fat); }
+}
+
+.meal-head {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  padding-top: 8px;
+  padding-bottom: 0;
+
+  ion-card-subtitle {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+    text-transform: none;
+  }
+}
+
+.meal-kcal {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin-right: 4px;
+}
+
+.planned {
+  --background: var(--ion-color-light);
+
+  h3 {
+    font-weight: 600;
+  }
+
+  p {
+    font-size: 0.75rem;
+  }
+}
+
+.water-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.trend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,124 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Tydzień</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="changeWeek(-1)" aria-label="Poprzedni tydzień">
+        <ion-icon slot="icon-only" name="chevron-back-outline" />
+      </ion-button>
+    </ion-buttons>
+    <div class="range">{{ rangeLabel() }}</div>
+    <ion-buttons slot="end">
+      <ion-button (click)="changeWeek(1)" aria-label="Następny tydzień">
+        <ion-icon slot="icon-only" name="chevron-forward-outline" />
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (!body.currentTarget()) {
+    <ion-card color="light">
+      <ion-card-content>
+        <p>Żeby ułożyć jadłospis, potrzebuję Twojego celu kalorii.</p>
+        <ion-button routerLink="/profil" expand="block">Uzupełnij profil</ion-button>
+      </ion-card-content>
+    </ion-card>
+  } @else if (plan.loading() || !recipes.loaded()) {
+    <div class="center">
+      <ion-spinner name="crescent" aria-label="Ładowanie" />
+      @if (recipes.importing()) {
+        <p>Importuję przepisy od dietetyczek…</p>
+      }
+    </div>
+  } @else if (!hasPlan()) {
+    <div class="empty ion-padding">
+      <p>Nie masz jeszcze jadłospisu na ten tydzień.</p>
+      <p class="meta">Ułożę 28 posiłków z {{ recipes.recipes().length }} przepisów, bez powtórzeń, dopasowanych do {{ plan.dailyKcal() }} kcal dziennie.</p>
+      <ion-button expand="block" [disabled]="busy()" (click)="generate()">
+        <ion-icon slot="start" name="shuffle-outline" />
+        Ułóż jadłospis
+      </ion-button>
+    </div>
+  } @else {
+    <div class="toolbar-actions ion-padding-horizontal">
+      <ion-button fill="outline" size="small" [disabled]="busy()" (click)="generate()">
+        <ion-icon slot="start" name="shuffle-outline" />
+        Przelosuj niezablokowane
+      </ion-button>
+    </div>
+
+    @for (day of days(); track day.date) {
+      <ion-card [class.today]="day.isToday">
+        <ion-card-header>
+          <ion-card-title class="day-title">
+            <span>{{ day.label }}</span>
+            <span class="day-kcal">{{ day.total }} kcal</span>
+          </ion-card-title>
+        </ion-card-header>
+        <ion-list lines="inset">
+          @for (m of day.meals; track m.slot) {
+            <ion-item button [detail]="false" (click)="openMeal(m)">
+              <ion-label class="ion-text-wrap">
+                <p class="slot">
+                  {{ slotLabels[m.slot] }}
+                  @if (m.item?.locked) {
+                    <ion-icon name="lock-closed" aria-label="zablokowany" />
+                  }
+                </p>
+                <h3>{{ m.recipe?.name ?? '—' }}</h3>
+              </ion-label>
+              <ion-note slot="end">
+                {{ m.kcal }} kcal
+                @if (m.factor !== 1) {
+                  <br /><small>{{ formatFactor(m.factor) }}</small>
+                }
+              </ion-note>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card>
+    }
+    <ion-text color="medium">
+      <p class="ion-padding-horizontal hint">„×1,15” oznacza porcję większą o 15% niż w przepisie – tak dopasowuję posiłki do Twojego celu.</p>
+    </ion-text>
+  }
+
+  <!-- wybór zamiennika -->
+  <ion-modal [isOpen]="swapping() !== null" (didDismiss)="swapping.set(null)">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Zamień – {{ swapping() ? slotLabels[swapping()!.slot] : '' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="swapping.set(null)">Zamknij</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+        <ion-toolbar>
+          <ion-searchbar placeholder="Szukaj przepisu" [value]="swapQuery()" (ionInput)="swapQuery.set($event.detail.value ?? '')" />
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-list>
+          @for (o of swapOptions(); track o.recipe.id) {
+            <ion-item button [detail]="false" (click)="chooseSwap(o.recipe.id)">
+              <ion-label class="ion-text-wrap">
+                <h3>{{ o.recipe.name }}</h3>
+                <p>B {{ o.recipe.protein_g }} · W {{ o.recipe.carbs_g }} · T {{ o.recipe.fat_g }} (na porcję)</p>
+              </ion-label>
+              <ion-note slot="end">
+                {{ o.kcal }} kcal
+                @if (o.factor !== 1) {
+                  <br /><small>{{ formatFactor(o.factor) }}</small>
+                }
+              </ion-note>
+            </ion-item>
+          } @empty {
+            <ion-text color="medium"><p class="ion-padding">Brak pasujących przepisów.</p></ion-text>
+          }
+        </ion-list>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

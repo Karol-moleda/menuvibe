@@ -1,0 +1,72 @@
+.range {
+  text-align: center;
+  font-weight: 600;
+}
+
+.center,
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--ion-color-medium);
+}
+
+.empty p:first-child {
+  color: var(--ion-text-color);
+  font-size: 1.1rem;
+}
+
+.meta {
+  font-size: 0.9rem;
+}
+
+.toolbar-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+ion-card.today {
+  border: 2px solid var(--ion-color-primary);
+}
+
+.day-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.day-kcal {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+}
+
+.slot {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  ion-icon {
+    vertical-align: -1px;
+    margin-left: 4px;
+    color: var(--ion-color-primary);
+  }
+}
+
+h3 {
+  font-size: 0.98rem;
+}
+
+ion-note {
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.hint {
+  font-size: 0.8rem;
+}
