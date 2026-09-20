@@ -168,8 +168,9 @@ export class TodayPage implements ViewWillEnter {
     const sheet = await this.sheet.create({
       header: `Dodaj – ${SLOT_LABELS[slot]}`,
       buttons: [
+        { text: 'Produkt – wyszukaj lub zeskanuj', handler: () => void this.router.navigate(['/produkt'], { queryParams: { slot } }) },
         { text: 'Z przepisów', handler: () => void this.router.navigate(['/przepisy'], { queryParams: { slot } }) },
-        { text: 'Szybki wpis (nazwa i kcal)', handler: () => void this.quickAdd(slot) },
+        { text: 'Szybki wpis (tylko nazwa i kcal)', handler: () => void this.quickAdd(slot) },
         { text: 'Anuluj', role: 'cancel' },
       ],
     });

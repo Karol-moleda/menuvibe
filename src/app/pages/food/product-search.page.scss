@@ -1,0 +1,76 @@
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.hint {
+  font-size: 0.85rem;
+}
+
+.scan {
+  padding-bottom: 0;
+}
+
+ion-note {
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.sheet {
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .brand {
+    margin: 2px 0 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.per100 {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin: 8px 0 16px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 8px 0 16px;
+}
+
+.nutrition {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+
+  strong {
+    display: block;
+    font-size: 1.05rem;
+  }
+
+  .kcal strong {
+    color: var(--ion-color-primary);
+  }
+}
+
+.macro {
+  padding-left: 8px;
+  border-left: 4px solid;
+
+  &.protein { border-color: var(--mv-protein); }
+  &.carbs { border-color: var(--mv-carbs); }
+  &.fat { border-color: var(--mv-fat); }
+}

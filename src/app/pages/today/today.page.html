@@ -95,6 +95,9 @@
                     @if (e.servings && e.servings !== 1) {
                       · {{ e.servings | number: '1.0-2' }} porcji
                     }
+                    @if (e.grams) {
+                      · {{ e.grams | number: '1.0-0' }} g
+                    }
                   </p>
                 </ion-label>
                 <ion-note slot="end">{{ e.kcal }} kcal</ion-note>

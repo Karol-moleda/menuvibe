@@ -1,0 +1,181 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dzis" text="" />
+    </ion-buttons>
+    <ion-title>Produkt – {{ slotLabels[slot()] }}</ion-title>
+    @if (scanner.available) {
+      <ion-buttons slot="end">
+        <ion-button (click)="scan()" aria-label="Skanuj kod kreskowy">
+          <ion-icon slot="icon-only" name="barcode-outline" />
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Szukaj, np. skyr piątnica – Enter"
+      enterkeyhint="search"
+      [debounce]="0"
+      [value]="query()"
+      (ionInput)="onInput($event.detail.value ?? '')"
+      (keyup.enter)="searchOff()"
+    />
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (scanner.available) {
+    <div class="scan ion-padding">
+      <ion-button expand="block" fill="outline" (click)="scan()">
+        <ion-icon slot="start" name="barcode-outline" />
+        Skanuj kod kreskowy
+      </ion-button>
+    </div>
+  } @else if (showHome()) {
+    <ion-text color="medium">
+      <p class="ion-padding-horizontal hint">Skaner działa w aplikacji na telefonie. Tutaj możesz wpisać kod EAN w wyszukiwarkę.</p>
+    </ion-text>
+  }
+
+  @if (showHome()) {
+    @if (products.favorites().length) {
+      <ion-list>
+        <ion-list-header><ion-label>Ulubione</ion-label></ion-list-header>
+        @for (p of products.favorites(); track p.id) {
+          <ion-item button [detail]="false" (click)="selectSaved(p)">
+            <ion-icon slot="start" name="star" color="warning" aria-hidden="true" />
+            <ion-label class="ion-text-wrap">
+              <h3>{{ p.name }}</h3>
+              <p>{{ p.brand }}</p>
+            </ion-label>
+            <ion-note slot="end">{{ p.kcal_100g | number: '1.0-0' }} kcal/100 g</ion-note>
+          </ion-item>
+        }
+      </ion-list>
+    }
+    @if (products.recent().length) {
+      <ion-list>
+        <ion-list-header><ion-label>Ostatnio dodawane</ion-label></ion-list-header>
+        @for (p of products.recent(); track p.id) {
+          <ion-item button [detail]="false" (click)="selectSaved(p)">
+            <ion-label class="ion-text-wrap">
+              <h3>{{ p.name }}</h3>
+              <p>{{ p.brand }} · ostatnio {{ p.default_grams | number: '1.0-0' }} g</p>
+            </ion-label>
+            <ion-note slot="end">{{ p.kcal_100g | number: '1.0-0' }} kcal/100 g</ion-note>
+          </ion-item>
+        }
+      </ion-list>
+    }
+    @if (!products.favorites().length && !products.recent().length) {
+      <ion-text color="medium">
+        <p class="ion-padding-horizontal">Wpisz nazwę produktu i naciśnij Enter – przeszukam bazę Open Food Facts (produkty sprzedawane w Polsce).</p>
+      </ion-text>
+    }
+  } @else {
+    @if (localResults().length) {
+      <ion-list>
+        <ion-list-header><ion-label>Twoje produkty</ion-label></ion-list-header>
+        @for (p of localResults(); track p.id) {
+          <ion-item button [detail]="false" (click)="selectSaved(p)">
+            @if (p.favorite) {
+              <ion-icon slot="start" name="star" color="warning" aria-hidden="true" />
+            }
+            <ion-label class="ion-text-wrap">
+              <h3>{{ p.name }}</h3>
+              <p>{{ p.brand }}</p>
+            </ion-label>
+            <ion-note slot="end">{{ p.kcal_100g | number: '1.0-0' }} kcal/100 g</ion-note>
+          </ion-item>
+        }
+      </ion-list>
+    }
+
+    <ion-list>
+      <ion-list-header><ion-label>Open Food Facts</ion-label></ion-list-header>
+      @if (searching()) {
+        <div class="center"><ion-spinner name="crescent" aria-label="Szukam" /></div>
+      } @else if (searchError(); as err) {
+        <ion-text color="danger"><p class="ion-padding-horizontal">{{ err }}</p></ion-text>
+      } @else if (offResults() === null || lastSearch() !== query().trim()) {
+        <ion-item button [detail]="false" (click)="searchOff()">
+          <ion-label color="primary">Szukaj „{{ query().trim() }}” w Open Food Facts</ion-label>
+        </ion-item>
+      } @else {
+        @for (p of offResults(); track p.ean) {
+          <ion-item button [detail]="false" (click)="selectOff(p)">
+            <ion-label class="ion-text-wrap">
+              <h3>{{ p.name }}</h3>
+              <p>{{ p.brand }}{{ p.quantity ? ' · ' + p.quantity : '' }}</p>
+            </ion-label>
+            <ion-note slot="end">{{ p.kcal_100g | number: '1.0-0' }} kcal/100 g</ion-note>
+          </ion-item>
+        } @empty {
+          <ion-text color="medium"><p class="ion-padding-horizontal">Nic nie znalazłem. Spróbuj innej nazwy albo dodaj własny produkt.</p></ion-text>
+        }
+      }
+    </ion-list>
+  }
+
+  <div class="ion-padding">
+    <ion-button expand="block" fill="clear" (click)="createOwn()">
+      <ion-icon slot="start" name="add-outline" />
+      Dodaj własny produkt
+    </ion-button>
+  </div>
+
+  <!-- gramatura i dodanie -->
+  <ion-modal [isOpen]="selected() !== null" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]" (didDismiss)="selected.set(null)">
+    <ng-template>
+      @if (selected(); as s) {
+        <ion-content class="ion-padding sheet">
+          <div class="sheet-head">
+            <div>
+              <h2>{{ s.name }}</h2>
+              @if (s.brand) {
+                <p class="brand">{{ s.brand }}</p>
+              }
+            </div>
+            <ion-button fill="clear" (click)="toggleFavorite()" [attr.aria-pressed]="!!s.saved?.favorite" aria-label="Ulubiony">
+              <ion-icon slot="icon-only" [name]="s.saved?.favorite ? 'star' : 'star-outline'" color="warning" />
+            </ion-button>
+          </div>
+          <p class="per100">
+            W 100 g: {{ s.kcal_100g | number: '1.0-0' }} kcal · B {{ s.protein_100g | number: '1.0-1' }} · W {{ s.carbs_100g | number: '1.0-1' }} · T {{ s.fat_100g | number: '1.0-1' }}
+          </p>
+
+          <ion-input
+            label="Ile zjadłeś (g)"
+            labelPlacement="stacked"
+            fill="outline"
+            type="number"
+            inputmode="decimal"
+            [value]="grams()"
+            (ionInput)="setGrams($event.detail.value)"
+          />
+          <div class="chips">
+            @for (g of gramChips(); track g) {
+              <ion-chip [outline]="grams() !== g" color="primary" (click)="grams.set(g)">
+                {{ g }} g{{ g === s.serving_g ? ' (porcja)' : '' }}
+              </ion-chip>
+            }
+          </div>
+
+          @if (preview(); as n) {
+            <div class="nutrition">
+              <div class="kcal"><strong>{{ n.kcal }}</strong> kcal</div>
+              <div class="macro protein"><strong>{{ n.protein_g | number: '1.0-1' }} g</strong> białko</div>
+              <div class="macro carbs"><strong>{{ n.carbs_g | number: '1.0-1' }} g</strong> węglow.</div>
+              <div class="macro fat"><strong>{{ n.fat_g | number: '1.0-1' }} g</strong> tłuszcz</div>
+            </div>
+          }
+
+          <ion-button expand="block" [disabled]="saving() || !(grams() > 0)" (click)="addSelected()">
+            Dodaj do: {{ slotLabels[slot()] }}
+          </ion-button>
+        </ion-content>
+      }
+    </ng-template>
+  </ion-modal>
+</ion-content>
