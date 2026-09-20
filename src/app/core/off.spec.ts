@@ -29,6 +29,17 @@ describe('Open Food Facts – mapowanie', () => {
     expect(p?.kcal_100g).toBe(250);
   });
 
+  it('obsługuje format nowego API wyszukiwania (słowniki języków, listy marek)', () => {
+    const p = parseOffProduct({
+      code: '5900820000011',
+      product_name: { main: 'Skyr natural', pl: 'Skyr naturalny' },
+      brands: ['Piątnica', 'Skyr'],
+      nutriments: { 'energy-kcal_100g': 63 },
+    });
+    expect(p?.name).toBe('Skyr naturalny');
+    expect(p?.brand).toBe('Piątnica');
+  });
+
   it('odrzuca produkty bez nazwy lub kalorii', () => {
     expect(parseOffProduct({ code: '1', nutriments: { 'energy-kcal_100g': 100 } })).toBeNull();
     expect(parseOffProduct({ code: '1', product_name: 'X', nutriments: {} })).toBeNull();

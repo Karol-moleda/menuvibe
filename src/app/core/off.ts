@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 
 const BASE = 'https://world.openfoodfacts.org';
+const SEARCH = 'https://search.openfoodfacts.org';
 const FIELDS = 'code,product_name,product_name_pl,generic_name_pl,brands,nutriments,serving_quantity,quantity';
 const USER_AGENT = 'MenuVibe/1.0 (prywatna aplikacja; karol.moleda90@gmail.com)';
 
@@ -24,13 +25,16 @@ export interface OffProduct {
   quantity: string | null;
 }
 
+/** Pola tekstowe bywają napisem, listą albo słownikiem języków (nowe API wyszukiwania). */
+type TextField = string | string[] | Record<string, string | undefined> | undefined;
+
 interface RawOffProduct {
   code?: string;
-  product_name?: string;
-  product_name_pl?: string;
-  generic_name_pl?: string;
-  brands?: string;
-  quantity?: string;
+  product_name?: TextField;
+  product_name_pl?: TextField;
+  generic_name_pl?: TextField;
+  brands?: TextField;
+  quantity?: TextField;
   serving_quantity?: number | string;
   nutriments?: Record<string, number | string | undefined>;
 }
@@ -49,20 +53,27 @@ export function parseOffProduct(raw: RawOffProduct | null | undefined): OffProdu
     const kj = num(n['energy-kj_100g']) ?? num(n['energy_100g']);
     if (kj !== null) kcal = kj / 4.184;
   }
-  const name = (raw.product_name_pl || raw.product_name || raw.generic_name_pl || '').trim();
+  const name = (text(raw.product_name_pl) || text(raw.product_name) || text(raw.generic_name_pl)).trim();
   if (!name || kcal === null || kcal > 950) return null;
   const serving = num(raw.serving_quantity);
   return {
     ean: String(raw.code ?? '').trim(),
     name,
-    brand: raw.brands?.split(',')[0]?.trim() || null,
+    brand: text(raw.brands).split(',')[0]?.trim() || null,
     kcal_100g: round1(kcal),
     protein_100g: round1(num(n['proteins_100g']) ?? 0),
     carbs_100g: round1(num(n['carbohydrates_100g']) ?? 0),
     fat_100g: round1(num(n['fat_100g']) ?? 0),
     serving_g: serving && serving > 0 && serving < 2000 ? serving : null,
-    quantity: raw.quantity?.trim() || null,
+    quantity: text(raw.quantity).trim() || null,
   };
+}
+
+function text(v: TextField): string {
+  if (!v) return '';
+  if (typeof v === 'string') return v;
+  if (Array.isArray(v)) return v.filter(Boolean).join(', ');
+  return v['pl'] || v['main'] || Object.values(v).find((x) => !!x) || '';
 }
 
 /** Wartości dla podanej gramatury. */
@@ -99,8 +110,33 @@ export class OpenFoodFactsClient {
     return p ? { ...p, ean } : null;
   }
 
-  /** Wyszukiwanie; najpierw produkty sprzedawane w Polsce, posortowane wg popularności. */
+  /**
+   * Wyszukiwanie produktów sprzedawanych w Polsce, od najpopularniejszych.
+   * Najpierw szybkie API search.openfoodfacts.org; gdy nie odpowie – stare cgi/search.pl.
+   */
   async search(query: string, pageSize = 24): Promise<OffProduct[]> {
+    let raw: RawOffProduct[] | null = null;
+    try {
+      raw = await this.searchNew(query, pageSize);
+    } catch {
+      raw = null;
+    }
+    // puste wyniki też sprawdzamy w starym API (inna wyszukiwarka)
+    if (!raw?.length) raw = await this.searchLegacy(query, pageSize);
+    const seen = new Set<string>();
+    return raw
+      .map(parseOffProduct)
+      .filter((p): p is OffProduct => !!p && !!p.ean && !seen.has(p.ean) && !!seen.add(p.ean));
+  }
+
+  private async searchNew(query: string, pageSize: number): Promise<RawOffProduct[]> {
+    const q = `${query.replace(/[":()]/g, ' ').trim()} AND countries_tags:"en:poland"`;
+    const params = new URLSearchParams({ q, page_size: String(pageSize), langs: 'pl', fields: FIELDS, sort_by: '-unique_scans_n' });
+    const data = await this.get<{ hits?: RawOffProduct[] }>(`${SEARCH}/search?${params}`);
+    return data?.hits ?? [];
+  }
+
+  private async searchLegacy(query: string, pageSize: number): Promise<RawOffProduct[]> {
     const params = new URLSearchParams({
       search_terms: query,
       search_simple: '1',
@@ -115,10 +151,7 @@ export class OpenFoodFactsClient {
       lc: 'pl',
     });
     const data = await this.get<{ products?: RawOffProduct[] }>(`${BASE}/cgi/search.pl?${params}`);
-    const seen = new Set<string>();
-    return (data?.products ?? [])
-      .map(parseOffProduct)
-      .filter((p): p is OffProduct => !!p && !!p.ean && !seen.has(p.ean) && !!seen.add(p.ean));
+    return data?.products ?? [];
   }
 
   private async get<T>(url: string): Promise<T | null> {
@@ -126,12 +159,14 @@ export class OpenFoodFactsClient {
       const res = await CapacitorHttp.get({ url, headers: { 'User-Agent': USER_AGENT }, readTimeout: 15000, connectTimeout: 10000 });
       if (res.status === 404) return (typeof res.data === 'object' ? res.data : null) as T | null;
       if (res.status === 429) throw new Error('Open Food Facts: za dużo zapytań, spróbuj za minutę.');
+      if (res.status >= 500) throw new Error('Open Food Facts nie odpowiada (przeciążony serwer). Spróbuj za chwilę albo zeskanuj kod.');
       if (res.status >= 400) throw new Error(`Open Food Facts: błąd ${res.status}`);
       return (typeof res.data === 'string' ? JSON.parse(res.data) : res.data) as T;
     }
     const res = await fetch(url, { headers: { Accept: 'application/json' } });
     if (res.status === 404) return (await res.json().catch(() => null)) as T | null;
     if (res.status === 429) throw new Error('Open Food Facts: za dużo zapytań, spróbuj za minutę.');
+    if (res.status >= 500) throw new Error('Open Food Facts nie odpowiada (przeciążony serwer). Spróbuj za chwilę albo zeskanuj kod.');
     if (!res.ok) throw new Error(`Open Food Facts: błąd ${res.status}`);
     return (await res.json()) as T;
   }
