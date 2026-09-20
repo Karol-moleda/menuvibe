@@ -1,0 +1,130 @@
+form {
+  padding: 4px 0 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+
+  ion-input {
+    --border-radius: 12px;
+    --border-color: var(--ion-border-color);
+    --highlight-color-focused: var(--ion-color-primary);
+    min-height: 56px;
+  }
+}
+
+.unit {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  white-space: nowrap;
+}
+
+.hint {
+  margin: 10px 2px 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ion-color-medium);
+}
+
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &.rates {
+    margin-top: 14px;
+  }
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--ion-border-color);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ion-text-color);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+    background: var(--mv-primary-soft);
+  }
+}
+
+.tile-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.95rem;
+    font-weight: 650;
+  }
+
+  small {
+    font-size: 0.78rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.tile-kcal {
+  font-size: 1.05rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  small {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--ion-color-medium);
+  }
+}
+
+ion-footer {
+  background: var(--mv-surface);
+  box-shadow: 0 -1px 0 var(--ion-border-color);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px calc(10px + var(--ion-safe-area-bottom, 0px));
+
+  ion-button {
+    min-width: 120px;
+    height: 48px;
+  }
+}
+
+.summary-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  small {
+    font-size: 0.78rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.summary-kcal {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ion-color-primary);
+}

@@ -25,6 +25,13 @@ Deno.test('prompt zawiera cel, bilans i posiłek', () => {
   assert(p.includes('Zostało: 850 kcal'));
   assert(p.includes('kolacja'));
   assert(p.includes('propose_recipe'));
+  assert(!p.includes('już wcześniej zaproponowałeś'));
+});
+
+Deno.test('prompt wymienia wcześniejsze propozycje, żeby się nie powtarzały', () => {
+  const p = systemPrompt({ ...ctx, previous: ['Shakshuka ze szpinakiem', 'Kurczak curry'] }, 'dinner');
+  assert(p.includes('Shakshuka ze szpinakiem; Kurczak curry'));
+  assert(p.includes('Nie proponuj ich ponownie'));
 });
 
 Deno.test('sanityzacja przepisu: liczy kcal z makro, gdy się nie zgadza', () => {

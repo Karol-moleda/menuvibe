@@ -90,6 +90,8 @@ export class TodayPage implements ViewWillEnter {
   protected readonly slotLabels = SLOT_LABELS;
   protected readonly signed = signed;
   protected readonly round = Math.round;
+  protected readonly ringLength = 2 * Math.PI * 52;
+  protected readonly todayLabel = capitalize(new Intl.DateTimeFormat('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date()));
 
   protected readonly planned = signal<MealPlanItemRow[]>([]);
   protected readonly busy = signal(false);
@@ -240,6 +242,10 @@ export class TodayPage implements ViewWillEnter {
     const t = await this.toast.create({ message, duration: 3000, color, position: 'top' });
     await t.present();
   }
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function errorMessage(e: unknown): string {

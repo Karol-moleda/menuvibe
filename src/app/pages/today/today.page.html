@@ -1,6 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Dziś</ion-title>
+    <span slot="end" class="date">{{ todayLabel }}</span>
   </ion-toolbar>
 </ion-header>
 
@@ -27,20 +28,25 @@
     <ion-card class="balance">
       <ion-card-content>
         <div class="kcal-row">
-          <div>
-            <div class="big">{{ p.kcal.value }}</div>
+          <div class="side">
+            <div class="num">{{ p.kcal.value }}</div>
             <div class="label">zjedzone</div>
           </div>
-          <div class="center-col">
-            <div class="big" [class.over]="p.remaining < 0">{{ p.remaining < 0 ? '+' + -p.remaining : p.remaining }}</div>
-            <div class="label">{{ p.remaining < 0 ? 'ponad cel' : 'zostało kcal' }}</div>
+          <div class="ring" [class.over]="p.remaining < 0" role="img" [attr.aria-label]="'Zjedzone ' + p.kcal.value + ' z ' + p.kcal.max + ' kcal'">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="track" cx="60" cy="60" r="52" />
+              <circle class="value" cx="60" cy="60" r="52" [attr.stroke-dasharray]="ringLength" [attr.stroke-dashoffset]="ringLength * (1 - p.kcal.ratio)" />
+            </svg>
+            <div class="ring-text">
+              <div class="big">{{ p.remaining < 0 ? '+' + -p.remaining : p.remaining }}</div>
+              <div class="label">{{ p.remaining < 0 ? 'ponad cel' : 'zostało kcal' }}</div>
+            </div>
           </div>
-          <div class="right">
-            <div class="big">{{ p.kcal.max }}</div>
+          <div class="side">
+            <div class="num">{{ p.kcal.max }}</div>
             <div class="label">cel</div>
           </div>
         </div>
-        <ion-progress-bar [value]="p.kcal.ratio" [color]="p.kcal.over ? 'danger' : 'primary'" aria-label="Postęp kalorii" />
 
         <div class="macros">
           @for (m of [
@@ -51,7 +57,7 @@
             <div class="macro">
               <div class="macro-head">
                 <span>{{ m.label }}</span>
-                <span>{{ m.v.value }}/{{ m.v.max }} g</span>
+                <span>{{ m.v.value }}<small> / {{ m.v.max }} g</small></span>
               </div>
               <div class="bar" [class]="m.key">
                 <div class="fill" [style.width.%]="m.v.ratio * 100"></div>

@@ -41,8 +41,9 @@
   max-width: 85%;
   align-self: flex-start;
   padding: 10px 14px;
-  border-radius: 16px 16px 16px 4px;
-  background: var(--ion-color-light);
+  border-radius: 18px 18px 18px 6px;
+  background: var(--mv-surface);
+  box-shadow: var(--mv-shadow);
   color: var(--ion-text-color);
 
   p {
@@ -53,7 +54,8 @@
 
   &.user {
     align-self: flex-end;
-    border-radius: 16px 16px 4px 16px;
+    border-radius: 18px 18px 6px 18px;
+    box-shadow: none;
     background: var(--ion-color-primary);
     color: var(--ion-color-primary-contrast);
   }
@@ -65,10 +67,11 @@
 }
 
 .recipe {
-  border: 1px solid var(--ion-color-light-shade);
-  border-radius: 14px;
-  padding: 12px;
-  background: var(--ion-background-color);
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--mv-radius);
+  padding: 14px;
+  background: var(--mv-surface);
+  box-shadow: var(--mv-shadow);
 
   header {
     display: flex;
@@ -183,8 +186,9 @@
     flex: 1;
     --padding-start: 12px;
     --padding-end: 12px;
-    border: 1px solid var(--ion-color-medium-tint);
-    border-radius: 20px;
+    border: 1px solid var(--ion-border-color);
+    border-radius: 22px;
+    background: var(--mv-surface);
     max-height: 140px;
   }
 }

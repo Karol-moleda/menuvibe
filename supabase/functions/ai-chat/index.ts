@@ -107,11 +107,12 @@ Deno.serve(async (req) => {
 
 // deno-lint-ignore no-explicit-any
 async function loadContext(db: any, date: string): Promise<DayContext> {
-  const [profile, targets, diary, planned] = await Promise.all([
+  const [profile, targets, diary, planned, previous] = await Promise.all([
     db.from('profiles').select('goal,slot_split').maybeSingle(),
     db.from('calorie_targets').select('kcal,protein_g,carbs_g,fat_g,valid_from').lte('valid_from', date).order('valid_from', { ascending: false }).limit(1),
     db.from('diary_entries').select('slot,name,kcal,protein_g,carbs_g,fat_g,recipe_id').eq('date', date),
     db.from('meal_plan_items').select('slot,portion_factor,recipe_id,recipes(name,kcal)').eq('date', date),
+    db.from('recipes').select('name').eq('origin', 'claude').order('created_at', { ascending: false }).limit(80),
   ]);
   const entries = (diary.data ?? []) as { slot: MealSlot; name: string; kcal: number; protein_g: number; carbs_g: number; fat_g: number; recipe_id: string | null }[];
   const eaten = entries.reduce(
@@ -130,5 +131,6 @@ async function loadContext(db: any, date: string): Promise<DayContext> {
       .filter((p) => p.recipes && !eatenRecipeIds.has(p.recipe_id))
       .map((p) => ({ slot: p.slot, name: p.recipes!.name, kcal: Math.round(p.recipes!.kcal * Number(p.portion_factor)) })),
     slotSplit: split && typeof split.breakfast === 'number' ? split : { breakfast: 30, snack: 10, lunch: 30, dinner: 30 },
+    previous: [...new Set(((previous.data ?? []) as { name: string }[]).map((r) => r.name))],
   };
 }

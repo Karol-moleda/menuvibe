@@ -1,4 +1,5 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -6,24 +7,19 @@ import {
   IonButton,
   IonButtons,
   IonContent,
+  IonFooter,
   IonHeader,
   IonInput,
-  IonItem,
   IonLabel,
-  IonList,
-  IonListHeader,
-  IonNote,
   IonSegment,
   IonSegmentButton,
-  IonSelect,
-  IonSelectOption,
   IonTitle,
   IonToolbar,
   ToastController,
 } from '@ionic/angular';
 import { BodyStore } from '../../core/body.store';
 import { Goal, Sex } from '../../core/database.types';
-import { ACTIVITY_LEVELS, todayIso } from '../../core/nutrition';
+import { ACTIVITY_LEVELS, ComputedTarget, ageOn, computeTarget, todayIso } from '../../core/nutrition';
 
 @Component({
   selector: 'app-profile-edit',
@@ -35,19 +31,15 @@ import { ACTIVITY_LEVELS, todayIso } from '../../core/nutrition';
     IonButtons,
     IonBackButton,
     IonContent,
-    IonList,
-    IonListHeader,
-    IonItem,
+    IonFooter,
     IonLabel,
     IonInput,
-    IonSelect,
-    IonSelectOption,
     IonSegment,
     IonSegmentButton,
-    IonNote,
     IonButton,
   ],
   templateUrl: './profile-edit.page.html',
+  styleUrl: './profile-edit.page.scss',
 })
 export class ProfileEditPage {
   private readonly store = inject(BodyStore);
@@ -55,7 +47,12 @@ export class ProfileEditPage {
   private readonly toast = inject(ToastController);
 
   protected readonly activityLevels = ACTIVITY_LEVELS;
-  protected readonly rates = [0.25, 0.5, 0.75, 1];
+  protected readonly rates = [
+    { rate: 0.25, title: 'Łagodnie' },
+    { rate: 0.5, title: 'Umiarkowanie' },
+    { rate: 0.75, title: 'Szybko' },
+    { rate: 1, title: 'Bardzo szybko' },
+  ];
   protected readonly maxBirthDate = todayIso();
   protected readonly saving = signal(false);
   protected readonly formatPct = (r: number) => `${String(r).replace('.', ',')}%`;
@@ -72,6 +69,56 @@ export class ProfileEditPage {
     water_goal_ml: new FormControl<number>(3000, { nonNullable: true, validators: [Validators.min(500), Validators.max(6000)] }),
     recalc_day: new FormControl<number>(1, { nonNullable: true, validators: [Validators.min(1), Validators.max(28)] }),
   });
+
+  protected readonly values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+  protected readonly weight = computed(() => {
+    const w = this.store.referenceWeight();
+    return w === null ? null : Math.round(w * 10) / 10;
+  });
+
+  /** Cel kcal dla bieżących wartości formularza (opcjonalnie z inną aktywnością lub tempem). */
+  private targetFor(patch: { pal?: number; rate?: number; goal?: Goal } = {}): ComputedTarget | null {
+    const v = { ...this.form.getRawValue(), ...this.values() };
+    const w = this.weight();
+    const pal = patch.pal ?? v.activity_pal;
+    if (!v.sex || !v.birth_date || !v.height_cm || !pal || w === null) return null;
+    return computeTarget(
+      { sex: v.sex, age: ageOn(v.birth_date, todayIso()), heightCm: Number(v.height_cm), weightKg: w, pal: Number(pal) },
+      {
+        goal: patch.goal ?? v.goal ?? 'cut',
+        weeklyRatePct: Number(patch.rate ?? v.weekly_rate_pct),
+        proteinGPerKg: Number(v.protein_g_per_kg),
+        fatPct: Number(v.fat_pct),
+      },
+    );
+  }
+
+  protected readonly preview = computed(() => this.targetFor());
+
+  protected readonly activityOptions = computed(() => {
+    const selected = Number(this.values().activity_pal);
+    return this.activityLevels.map((a) => ({
+      ...a,
+      selected: a.pal === selected,
+      tdee: this.targetFor({ pal: a.pal, goal: 'maintain' })?.tdee ?? null,
+    }));
+  });
+
+  protected readonly rateOptions = computed(() => {
+    const v = this.values();
+    const w = this.weight();
+    return this.rates.map((r) => ({
+      ...r,
+      selected: r.rate === Number(v.weekly_rate_pct),
+      kg: w ? `${v.goal === 'gain' ? '+' : '−'}${((w * r.rate) / 100).toFixed(2).replace('.', ',')} kg` : '',
+      kcal: this.targetFor({ rate: r.rate })?.kcal ?? null,
+    }));
+  });
+
+  protected pick(control: 'activity_pal' | 'weekly_rate_pct', value: number): void {
+    this.form.controls[control].setValue(value);
+    this.form.controls[control].markAsDirty();
+  }
 
   constructor() {
     if (!this.store.loaded()) void this.store.load();
@@ -109,7 +156,13 @@ export class ProfileEditPage {
         activity_pal: Number(v.activity_pal),
         weekly_rate_pct: v.goal === 'maintain' ? 0 : Number(v.weekly_rate_pct),
       });
-      const result = await this.store.ensureMonthlyTarget();
+      // nowe ustawienia od razu zmieniają cel (poza celem wpisanym ręcznie)
+      const current = this.store.currentTarget();
+      const result =
+        (await this.store.ensureMonthlyTarget()) ??
+        (current && current.method !== 'manual' && this.store.formulaPreview()?.kcal !== current.kcal
+          ? await this.store.recalculate({ automatic: false })
+          : null);
       if (result) {
         await this.showToast(`Zapisano. Twój cel: ${result.target.kcal} kcal dziennie.`);
       } else if (!this.store.latestWeight()) {

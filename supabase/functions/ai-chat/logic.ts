@@ -19,6 +19,8 @@ export interface DayContext {
   /** posiłki zaplanowane na dziś, jeszcze niezjedzone */
   planned: { slot: MealSlot; name: string; kcal: number }[];
   slotSplit: Record<MealSlot, number>;
+  /** nazwy przepisów, które Claude już wcześniej zaproponował (zapisane w aplikacji) */
+  previous?: string[];
 }
 
 export interface ProposedRecipe {
@@ -59,6 +61,9 @@ export function systemPrompt(ctx: DayContext, slot: MealSlot | null): string {
     ctx.eatenItems.length ? `Zjedzone posiłki: ${ctx.eatenItems.map((e) => `${SLOT_PL[e.slot]}: ${e.name} (${e.kcal} kcal)`).join('; ')}.` : '',
     ctx.planned.length ? `Zaplanowane na dziś (jeszcze niezjedzone): ${ctx.planned.map((p) => `${SLOT_PL[p.slot]}: ${p.name} (${p.kcal} kcal)`).join('; ')}.` : '',
     slot && slotTarget ? `Użytkownik pyta o posiłek: ${SLOT_PL[slot]}. Celuj w około ${slotTarget} kcal (±10%) na porcję.` : '',
+    ctx.previous?.length
+      ? `Te przepisy już wcześniej zaproponowałeś i użytkownik ma je zapisane: ${ctx.previous.join('; ')}. Nie proponuj ich ponownie ani wariantów z tymi samymi głównymi składnikami pod inną nazwą – chyba że użytkownik wprost o któryś poprosi.`
+      : '',
     '',
     'Zasady propozycji:',
     '- Każdy przepis zwracaj narzędziem propose_recipe (1–3 propozycje), a w tekście tylko krótko je zapowiedz. Nie powtarzaj w tekście składników ani kroków.',

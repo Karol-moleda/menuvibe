@@ -77,10 +77,17 @@
           }
 
           <div class="actions">
-            <ion-button size="small" fill="outline" [disabled]="isDone(key, 'save')" (click)="save(key, r)">
-              <ion-icon slot="start" [name]="isDone(key, 'save') ? 'checkmark-outline' : 'save-outline'" />
-              {{ isDone(key, 'save') ? 'Zapisany' : 'Zapisz' }}
-            </ion-button>
+            @if (isSaved(key)) {
+              <ion-button size="small" fill="clear" (click)="openRecipe(key)">
+                <ion-icon slot="start" name="bookmark" />
+                W przepisach
+              </ion-button>
+            } @else {
+              <ion-button size="small" fill="outline" [disabled]="isDone(key, 'save')" (click)="save(key, r)">
+                <ion-icon slot="start" name="bookmark-outline" />
+                Zapisz
+              </ion-button>
+            }
             <ion-button size="small" fill="outline" [disabled]="isDone(key, 'plan')" (click)="planToday(key, r)">
               <ion-icon slot="start" name="calendar-outline" />
               {{ isDone(key, 'plan') ? 'W planie' : 'Na dziś' }}

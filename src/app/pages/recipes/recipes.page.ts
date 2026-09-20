@@ -18,7 +18,7 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { heart } from 'ionicons/icons';
+import { heart, sparkles } from 'ionicons/icons';
 import { MealSlot } from '../../core/database.types';
 import { RecipeStore } from '../../core/recipe.store';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
@@ -56,6 +56,7 @@ import { SLOTS, SLOT_LABELS } from '../../core/planner';
           @for (s of slots; track s) {
             <ion-segment-button [value]="s"><ion-label>{{ slotLabels[s] }}</ion-label></ion-segment-button>
           }
+          <ion-segment-button value="claude"><ion-label>Od Claude</ion-label></ion-segment-button>
         </ion-segment>
       </ion-toolbar>
     </ion-header>
@@ -77,19 +78,28 @@ import { SLOTS, SLOT_LABELS } from '../../core/planner';
                     <ion-icon name="heart" color="danger" aria-label="Lubię" />
                   }
                   {{ r.name }}
+                  @if (r.origin === 'claude') {
+                    <ion-icon name="sparkles" color="primary" aria-label="Od Claude" />
+                  }
                 </h3>
                 <p>{{ slotLabels[r.slot] }} · B {{ round(r.protein_g) }} · W {{ round(r.carbs_g) }} · T {{ round(r.fat_g) }}</p>
               </ion-label>
               <ion-note slot="end">{{ r.kcal }} kcal</ion-note>
             </ion-item>
           } @empty {
-            <ion-text color="medium"><p class="ion-padding">Brak przepisów dla tego wyszukiwania.</p></ion-text>
+            <ion-text color="medium">
+              <p class="ion-padding">
+                {{ slot() === 'claude' ? 'Tu trafią przepisy wymyślone w czacie z Claude.' : 'Brak przepisów dla tego wyszukiwania.' }}
+              </p>
+            </ion-text>
           }
         </ion-list>
       }
     </ion-content>
   `,
   styles: `
+    ion-list { background: transparent; margin: 8px 16px; border-radius: var(--mv-radius); overflow: hidden; box-shadow: var(--mv-shadow); }
+    ion-list ion-label h3 { font-weight: 600; }
     .center { display: flex; flex-direction: column; align-items: center; padding: 48px; color: var(--ion-color-medium); }
     h3 ion-icon { vertical-align: -2px; margin-right: 4px; }
     .disliked { opacity: 0.5; }
@@ -108,7 +118,7 @@ export class RecipesPage {
   private readonly addToSlot = computed(() => this.params().get('slot') as MealSlot | null);
 
   protected readonly query = signal('');
-  protected readonly slot = linkedSignal<MealSlot | 'all'>(() => this.addToSlot() ?? 'all');
+  protected readonly slot = linkedSignal<MealSlot | 'all' | 'claude'>(() => this.addToSlot() ?? 'all');
 
   /** Parametry przekazywane do szczegółów przepisu. */
   protected readonly linkParams = computed(() => {
@@ -121,12 +131,12 @@ export class RecipesPage {
     const slot = this.slot();
     return this.store
       .recipes()
-      .filter((r) => (slot === 'all' || r.slot === slot) && (!q || normalize(r.name).includes(q)))
+      .filter((r) => (slot === 'all' || r.slot === slot || (slot === 'claude' && r.origin === 'claude')) && (!q || normalize(r.name).includes(q)))
       .sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name, 'pl'));
   });
 
   constructor() {
-    addIcons({ heart });
+    addIcons({ heart, sparkles });
     void this.store.load();
   }
 }

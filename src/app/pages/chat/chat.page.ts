@@ -17,15 +17,15 @@ import {
   ViewWillEnter,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { calendarOutline, checkmarkOutline, chevronDownOutline, chevronUpOutline, saveOutline, send, timeOutline, trashOutline } from 'ionicons/icons';
+import { bookmark, bookmarkOutline, calendarOutline, checkmarkOutline, chevronDownOutline, chevronUpOutline, send, timeOutline, trashOutline } from 'ionicons/icons';
 import { BodyStore } from '../../core/body.store';
-import { ChatMessage, ChatStore, ProposedRecipe } from '../../core/chat.store';
+import { ChatMessage, ChatStore, ProposedRecipe, cardKey } from '../../core/chat.store';
 import { MealSlot } from '../../core/database.types';
 import { DiaryStore } from '../../core/diary.store';
 import { todayIso } from '../../core/nutrition';
 import { PlanStore } from '../../core/plan.store';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
-import { RecipeStore, RecipeSummary } from '../../core/recipe.store';
+import { RecipeSummary } from '../../core/recipe.store';
 
 const SUGGESTIONS = [
   'Co zjeść na kolację z kalorii, które mi zostały?',
@@ -56,7 +56,6 @@ export class ChatPage implements ViewWillEnter {
   protected readonly chat = inject(ChatStore);
   private readonly body = inject(BodyStore);
   private readonly diary = inject(DiaryStore);
-  private readonly recipes = inject(RecipeStore);
   private readonly plan = inject(PlanStore);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastController);
@@ -71,8 +70,6 @@ export class ChatPage implements ViewWillEnter {
   protected readonly slot = signal<MealSlot | null>(guessSlot());
   /** rozwinięte karty przepisów */
   protected readonly expanded = signal<Set<string>>(new Set());
-  /** przepisy już zapisane w bazie: klucz karty -> przepis */
-  private readonly savedRecipes = new Map<string, RecipeSummary>();
   protected readonly done = signal<Record<string, string[]>>({});
 
   protected readonly remaining = computed(() => {
@@ -81,7 +78,7 @@ export class ChatPage implements ViewWillEnter {
   });
 
   constructor() {
-    addIcons({ send, trashOutline, saveOutline, checkmarkOutline, calendarOutline, timeOutline, chevronDownOutline, chevronUpOutline });
+    addIcons({ send, trashOutline, bookmark, bookmarkOutline, checkmarkOutline, calendarOutline, timeOutline, chevronDownOutline, chevronUpOutline });
     // przewijanie na dół przy nowych wiadomościach
     effect(() => {
       this.chat.messages();
@@ -113,7 +110,7 @@ export class ChatPage implements ViewWillEnter {
   }
 
   cardKey(msg: ChatMessage, index: number): string {
-    return `${msg.id}:${index}`;
+    return cardKey(msg.id, index);
   }
 
   toggle(key: string): void {
@@ -129,10 +126,13 @@ export class ChatPage implements ViewWillEnter {
     return this.done()[key]?.includes(action) ?? false;
   }
 
+  isSaved(key: string): boolean {
+    return this.chat.saved().has(key);
+  }
+
   async save(key: string, r: ProposedRecipe): Promise<void> {
     await this.run(key, 'save', async () => {
       await this.ensureSaved(key, r);
-      await this.showToast('Zapisano w przepisach – może też trafić do jadłospisu.');
     });
   }
 
@@ -166,17 +166,12 @@ export class ChatPage implements ViewWillEnter {
   }
 
   openRecipe(key: string): void {
-    const saved = this.savedRecipes.get(key);
+    const saved = this.chat.saved().get(key);
     if (saved) void this.router.navigate(['/przepisy', saved.id]);
   }
 
-  private async ensureSaved(key: string, r: ProposedRecipe): Promise<RecipeSummary> {
-    const existing = this.savedRecipes.get(key);
-    if (existing) return existing;
-    const saved = await this.recipes.createFromProposal(r);
-    this.savedRecipes.set(key, saved);
-    this.markDone(key, 'save');
-    return saved;
+  private ensureSaved(key: string, r: ProposedRecipe): Promise<RecipeSummary> {
+    return this.chat.ensureSaved(key, r);
   }
 
   private markDone(key: string, action: string): void {
