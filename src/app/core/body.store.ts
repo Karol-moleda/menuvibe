@@ -5,11 +5,15 @@ import { CalorieTargetRow, ProfileRow, WeightEntryRow } from './database.types';
 import {
   ComputedTarget,
   TargetSettings,
-  adaptiveTdee,
+  ActivityProfile,
+  MeasuredTdee,
   ageOn,
+  blendTdee,
   computeTarget,
-  limitMonthlyChange,
+  estimateTdee,
+  limitWeeklyChange,
   macrosFor,
+  measureTdee,
   nextRecalcDate,
   todayIso,
   weightTrend,
@@ -19,8 +23,9 @@ import {
 export type ProfileUpdate = Partial<
   Pick<
     ProfileRow,
-    | 'display_name' | 'sex' | 'birth_date' | 'height_cm' | 'activity_pal' | 'goal' | 'weekly_rate_pct'
-    | 'protein_g_per_kg' | 'fat_pct' | 'water_goal_ml' | 'recalc_day'
+    | 'display_name' | 'sex' | 'birth_date' | 'height_cm' | 'activity_pal' | 'body_fat_pct'
+    | 'job_pal' | 'daily_steps' | 'training_days' | 'training_minutes' | 'training_met'
+    | 'goal' | 'weekly_rate_pct' | 'protein_g_per_kg' | 'fat_pct' | 'water_goal_ml' | 'recalc_weekday'
   >
 >;
 
@@ -75,22 +80,46 @@ export class BodyStore {
     return weightTrend(this.weights(), this.today(), p?.goal ?? 'cut', Number(p?.weekly_rate_pct ?? 0.5));
   });
 
+  /** Zmierzone zapotrzebowanie z dziennika i wagi (odświeżane przy wczytaniu). */
+  readonly measured = signal<MeasuredTdee | null>(null);
+
+  /** Zapotrzebowanie „na żywo”: wzór + korekta z Twoich danych. */
+  readonly energy = computed(() => {
+    const body = this.bodyParams();
+    if (!body) return null;
+    const estimate = estimateTdee(body);
+    const blended = blendTdee(estimate.tdee, this.measured());
+    return { estimate, measured: this.measured(), ...blended };
+  });
+
   /** Podgląd celu z aktualnych danych (bez zapisu). */
   readonly formulaPreview = computed<ComputedTarget | null>(() => {
     const p = this.profile();
     const w = this.referenceWeight();
     if (!this.profileComplete() || !p || w === null) return null;
-    return computeTarget(
-      { sex: p.sex!, age: ageOn(p.birth_date!, this.today()), heightCm: Number(p.height_cm), weightKg: w, pal: Number(p.activity_pal) },
-      this.settings(p),
-    );
+    return computeTarget(this.bodyParams()!, this.settings(p), this.energy()?.tdee);
+  });
+
+  /** Parametry ciała do wzorów; null, gdy profil jest niekompletny. */
+  readonly bodyParams = computed(() => {
+    const p = this.profile();
+    const w = this.referenceWeight();
+    if (!p || w === null || !this.profileComplete()) return null;
+    return {
+      sex: p.sex!,
+      age: ageOn(p.birth_date!, this.today()),
+      heightCm: Number(p.height_cm),
+      weightKg: w,
+      bodyFatPct: p.body_fat_pct === null ? null : Number(p.body_fat_pct),
+      activity: this.activity(p),
+    };
   });
 
   readonly nextRecalc = computed(() => {
     const t = this.currentTarget();
     const p = this.profile();
     if (!t || !p) return null;
-    return nextRecalcDate(t.valid_from, p.recalc_day);
+    return nextRecalcDate(t.valid_from, p.recalc_weekday);
   });
 
   reset(): void {
@@ -112,7 +141,7 @@ export class BodyStore {
     let p = profile.data as ProfileRow | null;
     if (!p) {
       // profil tworzy trigger przy rejestracji; to zabezpieczenie na wypadek starszego konta
-      const created = await this.db.from('profiles').insert({}).select('*').single();
+      const created = await this.db.from('profiles').insert({} as never).select('*').single();
       if (created.error) throw created.error;
       p = created.data as ProfileRow;
     }
@@ -120,6 +149,7 @@ export class BodyStore {
     this.weights.set((weights.data ?? []) as WeightEntryRow[]);
     this.targets.set((targets.data ?? []) as CalorieTargetRow[]);
     this.loaded.set(true);
+    await this.refreshMeasured();
   }
 
   async saveProfile(update: ProfileUpdate): Promise<void> {
@@ -150,14 +180,14 @@ export class BodyStore {
   }
 
   /**
-   * Przelicza cel, jeśli nadszedł dzień comiesięcznego przeliczenia (albo celu jeszcze nie ma).
+   * Przelicza cel, jeśli nadszedł dzień cotygodniowego przeliczenia (albo celu jeszcze nie ma).
    * Cel ustawiony ręcznie (od dietetyczki) nie jest nadpisywany automatycznie.
    */
-  async ensureMonthlyTarget(): Promise<RecalcResult | null> {
+  async ensureWeeklyTarget(): Promise<RecalcResult | null> {
     if (!this.profileComplete()) return null;
     const current = this.currentTarget();
     if (current?.method === 'manual') return null;
-    const due = !current || this.today() >= nextRecalcDate(current.valid_from, this.profile()!.recalc_day);
+    const due = !current || this.today() >= nextRecalcDate(current.valid_from, this.profile()!.recalc_weekday);
     return due ? this.recalculate({ automatic: true }) : null;
   }
 
@@ -168,29 +198,37 @@ export class BodyStore {
   async recalculate(opts: { automatic?: boolean } = {}): Promise<RecalcResult> {
     const p = this.profile();
     const w = this.referenceWeight();
-    if (!p || w === null || !this.profileComplete()) throw new Error('Uzupełnij profil i dodaj wagę.');
+    const body = this.bodyParams();
+    if (!p || !body || w === null) throw new Error('Uzupełnij profil i dodaj wagę.');
     const today = this.today();
 
-    const measured = await this.measuredTdee();
-    const body = { sex: p.sex!, age: ageOn(p.birth_date!, today), heightCm: Number(p.height_cm), weightKg: w, pal: Number(p.activity_pal) };
-    const computed = computeTarget(body, this.settings(p), measured ?? undefined);
+    await this.refreshMeasured();
+    const energy = this.energy()!;
+    const computed = computeTarget(body, this.settings(p), energy.tdee);
 
     const previous = this.currentTarget();
     const previousKcal = opts.automatic && previous && previous.method !== 'manual' ? previous.kcal : null;
-    const kcal = limitMonthlyChange(previousKcal, computed.kcal);
+    const kcal = limitWeeklyChange(previousKcal, computed.kcal);
     const macros = macrosFor(kcal, w, this.settings(p));
 
-    const notes: string[] = [];
-    notes.push(measured ? `TDEE z Twoich danych: ${measured} kcal` : `TDEE ze wzoru: ${computed.tdee} kcal`);
+    const m = energy.measured;
+    const notes: string[] = [
+      m
+        ? `Zapotrzebowanie z Twoich danych: ${m.tdee} kcal (${m.loggedDays} dni dziennika, ${m.weighIns} ważeń), ze wzoru: ${energy.estimate.tdee} kcal`
+        : `Zapotrzebowanie ze wzoru: ${energy.estimate.tdee} kcal`,
+    ];
+    if (computed.clampedDeficit) notes.push('deficyt przycięty do 25% zapotrzebowania');
     if (computed.clampedToMinimum) notes.push('podniesiono do bezpiecznego minimum');
-    if (kcal !== computed.kcal) notes.push(`zmiana ograniczona do 250 kcal (wyliczone ${computed.kcal})`);
+    if (kcal !== computed.kcal) notes.push(`zmiana ograniczona (wyliczone ${computed.kcal})`);
 
     return this.saveTarget({
       valid_from: today,
       ...macros,
-      method: measured ? 'adaptive' : 'formula',
+      method: energy.used === 'blend' ? 'adaptive' : 'formula',
       bmr: computed.bmr,
-      tdee: computed.tdee,
+      tdee: energy.tdee,
+      measured_tdee: m?.tdee ?? null,
+      confidence: energy.confidence,
       weight_kg: Math.round(w * 100) / 100,
       note: notes.join('; '),
     }, previous?.kcal ?? null);
@@ -210,6 +248,8 @@ export class BodyStore {
       method: 'manual',
       bmr: null,
       tdee: null,
+      measured_tdee: null,
+      confidence: null,
       weight_kg: this.referenceWeight(),
       note: 'Cel ustawiony ręcznie',
     }, this.currentTarget()?.kcal ?? null);
@@ -232,16 +272,29 @@ export class BodyStore {
     return { target: saved, previousKcal };
   }
 
-  /** TDEE z ostatnich 28 dni dziennika i wagi; null, gdy danych jest za mało. */
-  private async measuredTdee(): Promise<number | null> {
+  /** Odświeża zmierzone zapotrzebowanie z ostatnich 28 dni dziennika i ważeń. */
+  async refreshMeasured(): Promise<void> {
     const end = this.today();
     const start = new Date(Date.parse(`${end}T12:00:00Z`) - 27 * 86_400_000).toISOString().slice(0, 10);
     const { data, error } = await this.db.from('diary_entries').select('date,kcal').gte('date', start).lte('date', end);
-    if (error || !data?.length) return null;
+    if (error || !data?.length) {
+      this.measured.set(null);
+      return;
+    }
     const perDay = new Map<string, number>();
     for (const r of data as { date: string; kcal: number }[]) perDay.set(r.date, (perDay.get(r.date) ?? 0) + r.kcal);
     const intake = [...perDay].map(([date, kcal]) => ({ date, kcal }));
-    return adaptiveTdee(intake, this.weights(), end);
+    this.measured.set(measureTdee(intake, this.weights(), end));
+  }
+
+  private activity(p: ProfileRow): ActivityProfile {
+    return {
+      jobPal: Number(p.job_pal),
+      dailySteps: p.daily_steps,
+      trainingDays: p.training_days,
+      trainingMinutes: p.training_minutes,
+      trainingMet: Number(p.training_met),
+    };
   }
 
   private settings(p: ProfileRow): TargetSettings {

@@ -81,3 +81,32 @@
   padding: 0 16px 12px;
   margin: 0;
 }
+
+.energy {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--ion-border-color);
+
+    span {
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .sum {
+    border-bottom: none;
+
+    span,
+    strong {
+      color: var(--ion-text-color);
+      font-weight: 700;
+    }
+  }
+}

@@ -44,15 +44,15 @@ export class TabsPage {
     void this.init();
   }
 
-  /** Po zalogowaniu: wczytaj profil i – jeśli nadszedł dzień – przelicz miesięczny cel kcal. */
+  /** Po zalogowaniu: wczytaj profil i – jeśli nadszedł dzień – przelicz tygodniowy cel kcal. */
   private async init(): Promise<void> {
     try {
       await this.body.load();
-      const result = await this.body.ensureMonthlyTarget();
+      const result = await this.body.ensureWeeklyTarget();
       if (result) {
         const diff = result.previousKcal !== null ? ` (${signed(result.target.kcal - result.previousKcal, 0)} kcal)` : '';
         const t = await this.toast.create({
-          message: `Nowy miesięczny cel: ${result.target.kcal} kcal${diff}`,
+          message: `Nowy cel na ten tydzień: ${result.target.kcal} kcal${diff}`,
           duration: 4000,
           color: 'success',
           position: 'top',

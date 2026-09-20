@@ -65,3 +65,5 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Sloty posiłków: `breakfast` (śniadanie), `snack` (przekąska), `lunch` (obiad), `dinner` (kolacja).
 - Wartości odżywcze przepisów są na 1 porcję; ilości składników na cały przepis.
 - Klucza secret Supabase ani klucza Anthropic nigdy nie umieszczamy w aplikacji.
+- Zapotrzebowanie liczymy składnikowo (BMR × tryb dnia + kroki + treningi), a cel przeliczamy co tydzień;
+  szczegóły i źródła w README („Jak liczone są kalorie”). Zmiany w `nutrition.ts` zawsze z testami.

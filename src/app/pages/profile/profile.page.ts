@@ -32,7 +32,7 @@ import {
 } from '@ionic/angular';
 import { AuthService } from '../../core/auth.service';
 import { BodyStore } from '../../core/body.store';
-import { ACTIVITY_LEVELS, ageOn } from '../../core/nutrition';
+import { JOB_LEVELS, TRAINING_INTENSITIES, ageOn } from '../../core/nutrition';
 import { GOAL_LABELS, METHOD_LABELS, TREND_LABELS, formatDatePl, signed } from '../../shared/labels';
 
 @Component({
@@ -90,12 +90,14 @@ export class ProfilePage {
   protected readonly summary = computed(() => {
     const p = this.store.profile();
     if (!p) return null;
-    const activity = ACTIVITY_LEVELS.find((a) => a.pal === Number(p.activity_pal));
+    const job = JOB_LEVELS.find((a) => a.pal === Number(p.job_pal));
+    const intensity = TRAINING_INTENSITIES.find((t) => t.met === Number(p.training_met));
     return {
       sex: p.sex === 'male' ? 'Mężczyzna' : p.sex === 'female' ? 'Kobieta' : '—',
       age: p.birth_date ? `${ageOn(p.birth_date, this.store.today())} lat` : '—',
       height: p.height_cm ? `${Number(p.height_cm)} cm` : '—',
-      activity: activity?.label ?? '—',
+      activity: `${job?.label ?? '—'}, ${p.daily_steps} kroków`,
+      training: p.training_days ? `${p.training_days}× ${p.training_minutes} min (${(intensity?.label ?? '').toLowerCase()})` : 'brak',
       goal: `${GOAL_LABELS[p.goal]}${p.goal === 'maintain' ? '' : `, ${String(Number(p.weekly_rate_pct)).replace('.', ',')}% masy/tydz.`}`,
     };
   });
@@ -124,7 +126,7 @@ export class ProfilePage {
       const firstTarget = !this.store.currentTarget();
       await this.store.addWeight(Math.round(value * 10) / 10);
       this.weightInput.set('');
-      const result = firstTarget ? await this.store.ensureMonthlyTarget() : null;
+      const result = firstTarget ? await this.store.ensureWeeklyTarget() : null;
       await this.showToast(result ? `Zapisano. Twój cel: ${result.target.kcal} kcal dziennie.` : 'Zapisano wagę.');
     });
   }

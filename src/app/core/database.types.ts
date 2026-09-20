@@ -27,6 +27,13 @@ export type ProfileRow = {
   birth_date: string | null;
   height_cm: number | null;
   activity_pal: number | null;
+  body_fat_pct: number | null;
+  job_pal: number;
+  daily_steps: number;
+  training_days: number;
+  training_minutes: number;
+  training_met: number;
+  recalc_weekday: number;
   goal: Goal;
   weekly_rate_pct: number;
   protein_g_per_kg: number;
@@ -50,6 +57,8 @@ export type CalorieTargetRow = {
   bmr: number | null;
   tdee: number | null;
   weight_kg: number | null;
+  measured_tdee: number | null;
+  confidence: number | null;
   note: string | null;
   created_at: string;
 };

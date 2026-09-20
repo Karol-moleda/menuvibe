@@ -8,6 +8,10 @@ form {
   gap: 12px;
   margin-top: 14px;
 
+  ion-input.wide {
+    grid-column: 1 / -1;
+  }
+
   ion-input {
     --border-radius: 12px;
     --border-color: var(--ion-border-color);
@@ -127,4 +131,33 @@ ion-footer {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ion-color-primary);
+}
+
+.breakdown {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--ion-border-color);
+
+    span {
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .sum {
+    border-bottom: none;
+
+    span,
+    strong {
+      color: var(--ion-text-color);
+      font-weight: 700;
+    }
+  }
 }

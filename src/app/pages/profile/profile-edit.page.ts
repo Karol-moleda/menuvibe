@@ -19,7 +19,7 @@ import {
 } from '@ionic/angular';
 import { BodyStore } from '../../core/body.store';
 import { Goal, Sex } from '../../core/database.types';
-import { ACTIVITY_LEVELS, ComputedTarget, ageOn, computeTarget, todayIso } from '../../core/nutrition';
+import { ComputedTarget, JOB_LEVELS, TRAINING_INTENSITIES, ageOn, computeTarget, todayIso } from '../../core/nutrition';
 
 @Component({
   selector: 'app-profile-edit',
@@ -46,7 +46,8 @@ export class ProfileEditPage {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastController);
 
-  protected readonly activityLevels = ACTIVITY_LEVELS;
+  protected readonly jobLevels = JOB_LEVELS;
+  protected readonly intensities = TRAINING_INTENSITIES;
   protected readonly rates = [
     { rate: 0.25, title: 'Łagodnie' },
     { rate: 0.5, title: 'Umiarkowanie' },
@@ -61,13 +62,18 @@ export class ProfileEditPage {
     sex: new FormControl<Sex | null>(null, Validators.required),
     birth_date: new FormControl<string | null>(null, Validators.required),
     height_cm: new FormControl<number | null>(null, [Validators.required, Validators.min(100), Validators.max(250)]),
-    activity_pal: new FormControl<number | null>(null, Validators.required),
+    body_fat_pct: new FormControl<number | null>(null, [Validators.min(3), Validators.max(60)]),
+    job_pal: new FormControl<number>(1.15, { nonNullable: true }),
+    daily_steps: new FormControl<number>(6000, { nonNullable: true, validators: [Validators.min(0), Validators.max(40000)] }),
+    training_days: new FormControl<number>(3, { nonNullable: true, validators: [Validators.min(0), Validators.max(14)] }),
+    training_minutes: new FormControl<number>(60, { nonNullable: true, validators: [Validators.min(0), Validators.max(300)] }),
+    training_met: new FormControl<number>(6, { nonNullable: true }),
     goal: new FormControl<Goal>('cut', { nonNullable: true }),
     weekly_rate_pct: new FormControl<number>(0.5, { nonNullable: true }),
     protein_g_per_kg: new FormControl<number>(1.8, { nonNullable: true, validators: [Validators.min(0.8), Validators.max(3)] }),
     fat_pct: new FormControl<number>(25, { nonNullable: true, validators: [Validators.min(15), Validators.max(45)] }),
     water_goal_ml: new FormControl<number>(3000, { nonNullable: true, validators: [Validators.min(500), Validators.max(6000)] }),
-    recalc_day: new FormControl<number>(1, { nonNullable: true, validators: [Validators.min(1), Validators.max(28)] }),
+    recalc_weekday: new FormControl<number>(1, { nonNullable: true, validators: [Validators.min(1), Validators.max(7)] }),
   });
 
   protected readonly values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
@@ -76,14 +82,26 @@ export class ProfileEditPage {
     return w === null ? null : Math.round(w * 10) / 10;
   });
 
-  /** Cel kcal dla bieżących wartości formularza (opcjonalnie z inną aktywnością lub tempem). */
-  private targetFor(patch: { pal?: number; rate?: number; goal?: Goal } = {}): ComputedTarget | null {
+  /** Cel kcal dla bieżących wartości formularza (opcjonalnie z innym trybem dnia lub tempem). */
+  private targetFor(patch: { jobPal?: number; met?: number; rate?: number; goal?: Goal } = {}): ComputedTarget | null {
     const v = { ...this.form.getRawValue(), ...this.values() };
     const w = this.weight();
-    const pal = patch.pal ?? v.activity_pal;
-    if (!v.sex || !v.birth_date || !v.height_cm || !pal || w === null) return null;
+    if (!v.sex || !v.birth_date || !v.height_cm || w === null) return null;
     return computeTarget(
-      { sex: v.sex, age: ageOn(v.birth_date, todayIso()), heightCm: Number(v.height_cm), weightKg: w, pal: Number(pal) },
+      {
+        sex: v.sex,
+        age: ageOn(v.birth_date, todayIso()),
+        heightCm: Number(v.height_cm),
+        weightKg: w,
+        bodyFatPct: v.body_fat_pct === null || v.body_fat_pct === undefined ? null : Number(v.body_fat_pct),
+        activity: {
+          jobPal: Number(patch.jobPal ?? v.job_pal),
+          dailySteps: Number(v.daily_steps),
+          trainingDays: Number(v.training_days),
+          trainingMinutes: Number(v.training_minutes),
+          trainingMet: Number(patch.met ?? v.training_met),
+        },
+      },
       {
         goal: patch.goal ?? v.goal ?? 'cut',
         weeklyRatePct: Number(patch.rate ?? v.weekly_rate_pct),
@@ -95,14 +113,21 @@ export class ProfileEditPage {
 
   protected readonly preview = computed(() => this.targetFor());
 
-  protected readonly activityOptions = computed(() => {
-    const selected = Number(this.values().activity_pal);
-    return this.activityLevels.map((a) => ({
-      ...a,
-      selected: a.pal === selected,
-      tdee: this.targetFor({ pal: a.pal, goal: 'maintain' })?.tdee ?? null,
+  protected readonly jobOptions = computed(() => {
+    const selected = Number(this.values().job_pal);
+    return this.jobLevels.map((j) => ({
+      ...j,
+      selected: j.pal === selected,
+      tdee: this.targetFor({ jobPal: j.pal, goal: 'maintain' })?.tdee ?? null,
     }));
   });
+
+  protected readonly intensityOptions = computed(() => {
+    const selected = Number(this.values().training_met);
+    return this.intensities.map((t) => ({ ...t, selected: t.met === selected }));
+  });
+
+  protected readonly breakdown = computed(() => this.targetFor()?.estimate ?? null);
 
   protected readonly rateOptions = computed(() => {
     const v = this.values();
@@ -115,7 +140,7 @@ export class ProfileEditPage {
     }));
   });
 
-  protected pick(control: 'activity_pal' | 'weekly_rate_pct', value: number): void {
+  protected pick(control: 'job_pal' | 'training_met' | 'weekly_rate_pct', value: number): void {
     this.form.controls[control].setValue(value);
     this.form.controls[control].markAsDirty();
   }
@@ -130,13 +155,18 @@ export class ProfileEditPage {
         sex: p.sex,
         birth_date: p.birth_date,
         height_cm: p.height_cm !== null ? Number(p.height_cm) : null,
-        activity_pal: p.activity_pal !== null ? Number(p.activity_pal) : null,
+        body_fat_pct: p.body_fat_pct === null ? null : Number(p.body_fat_pct),
+        job_pal: Number(p.job_pal),
+        daily_steps: p.daily_steps,
+        training_days: p.training_days,
+        training_minutes: p.training_minutes,
+        training_met: Number(p.training_met),
         goal: p.goal,
         weekly_rate_pct: Number(p.weekly_rate_pct) || 0.5,
         protein_g_per_kg: Number(p.protein_g_per_kg),
         fat_pct: Number(p.fat_pct),
         water_goal_ml: p.water_goal_ml,
-        recalc_day: p.recalc_day,
+        recalc_weekday: p.recalc_weekday,
       });
     });
   }
@@ -150,16 +180,19 @@ export class ProfileEditPage {
     this.saving.set(true);
     try {
       const v = this.form.getRawValue();
+      const estimate = this.targetFor()?.estimate;
       await this.store.saveProfile({
         ...v,
         height_cm: Number(v.height_cm),
-        activity_pal: Number(v.activity_pal),
+        body_fat_pct: v.body_fat_pct === null ? null : Number(v.body_fat_pct),
+        // zapisujemy też wynikowy PAL, żeby było widać, jak mocny jest tryb dnia
+        activity_pal: estimate?.pal ?? null,
         weekly_rate_pct: v.goal === 'maintain' ? 0 : Number(v.weekly_rate_pct),
       });
       // nowe ustawienia od razu zmieniają cel (poza celem wpisanym ręcznie)
       const current = this.store.currentTarget();
       const result =
-        (await this.store.ensureMonthlyTarget()) ??
+        (await this.store.ensureWeeklyTarget()) ??
         (current && current.method !== 'manual' && this.store.formulaPreview()?.kcal !== current.kcal
           ? await this.store.recalculate({ automatic: false })
           : null);

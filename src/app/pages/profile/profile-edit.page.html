@@ -46,28 +46,59 @@
     </section>
 
     <section class="mv-section">
-      <h2>Aktywność</h2>
-      <div class="tiles" role="radiogroup" aria-label="Poziom aktywności">
-        @for (a of activityOptions(); track a.pal) {
-          <button
-            type="button"
-            class="tile"
-            role="radio"
-            [attr.aria-checked]="a.selected"
-            [class.selected]="a.selected"
-            (click)="pick('activity_pal', a.pal)"
-          >
+      <h2>Tryb dnia</h2>
+      <div class="tiles" role="radiogroup" aria-label="Tryb dnia">
+        @for (j of jobOptions(); track j.pal) {
+          <button type="button" class="tile" role="radio" [attr.aria-checked]="j.selected" [class.selected]="j.selected" (click)="pick('job_pal', j.pal)">
             <span class="tile-main">
-              <strong>{{ a.label }}</strong>
-              <small>{{ a.hint }}</small>
+              <strong>{{ j.label }}</strong>
+              <small>{{ j.hint }}</small>
             </span>
-            @if (a.tdee) {
-              <span class="tile-kcal">{{ a.tdee }}<small> kcal</small></span>
-            }
           </button>
         }
       </div>
-      <p class="hint">Kcal przy każdej opcji to Twoje zapotrzebowanie bez deficytu.</p>
+      <div class="grid">
+        <ion-input class="wide" label="Przeciętnie kroków dziennie" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" step="500" formControlName="daily_steps">
+          <span slot="end" class="unit">≈ {{ breakdown()?.stepsKcal ?? 0 }} kcal</span>
+        </ion-input>
+        <ion-input label="Tkanka tłuszczowa" labelPlacement="stacked" fill="outline" type="number" inputmode="decimal" step="0.5" formControlName="body_fat_pct" placeholder="opcjonalnie">
+          <span slot="end" class="unit">%</span>
+        </ion-input>
+      </div>
+      <p class="hint">Kroki wpisz z zegarka lub telefonu. Pierwsze 2500 kroków jest już w trybie dnia.</p>
+    </section>
+
+    <section class="mv-section">
+      <h2>Treningi</h2>
+      <div class="grid">
+        <ion-input label="Treningi w tygodniu" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" formControlName="training_days">
+          <span slot="end" class="unit">razy</span>
+        </ion-input>
+        <ion-input label="Czas treningu" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" step="5" formControlName="training_minutes">
+          <span slot="end" class="unit">min</span>
+        </ion-input>
+      </div>
+      <div class="tiles" role="radiogroup" aria-label="Intensywność treningu">
+        @for (t of intensityOptions(); track t.met) {
+          <button type="button" class="tile" role="radio" [attr.aria-checked]="t.selected" [class.selected]="t.selected" (click)="pick('training_met', t.met)">
+            <span class="tile-main">
+              <strong>{{ t.label }}</strong>
+              <small>{{ t.hint }}</small>
+            </span>
+            <span class="tile-kcal">{{ t.met }}<small> MET</small></span>
+          </button>
+        }
+      </div>
+
+      @if (breakdown(); as b) {
+        <ul class="breakdown">
+          <li><span>Przemiana spoczynkowa</span><strong>{{ b.bmr }} kcal</strong></li>
+          <li><span>Tryb dnia</span><strong>+{{ b.baseKcal - b.bmr }} kcal</strong></li>
+          <li><span>Chodzenie</span><strong>+{{ b.stepsKcal }} kcal</strong></li>
+          <li><span>Treningi (średnio na dzień)</span><strong>+{{ b.trainingKcal }} kcal</strong></li>
+          <li class="sum"><span>Zapotrzebowanie</span><strong>{{ b.tdee }} kcal</strong></li>
+        </ul>
+      }
     </section>
 
     <section class="mv-section">
@@ -114,11 +145,14 @@
         <ion-input label="Woda dziennie" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" step="250" formControlName="water_goal_ml">
           <span slot="end" class="unit">ml</span>
         </ion-input>
-        <ion-input label="Przeliczanie" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" min="1" max="28" formControlName="recalc_day">
-          <span slot="end" class="unit">dzień mies.</span>
+        <ion-input label="Przeliczanie" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" min="1" max="7" formControlName="recalc_weekday">
+          <span slot="end" class="unit">dzień tyg.</span>
         </ion-input>
       </div>
-      <p class="hint">Tego dnia co miesiąc aplikacja sama przeliczy cel (najwyżej o 250 kcal naraz).</p>
+      <p class="hint">
+        Tego dnia co tydzień aplikacja przeliczy cel na podstawie Twoich danych (1 = poniedziałek).
+        Zmiana naraz to najwyżej 100 kcal, żeby cel nie skakał.
+      </p>
     </section>
   </form>
 </ion-content>

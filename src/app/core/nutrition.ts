@@ -5,25 +5,72 @@
 import { Goal, Sex } from './database.types';
 
 export const KCAL_PER_KG_FAT = 7700;
-/** Maksymalna zmiana celu przy jednym comiesięcznym przeliczeniu. */
-export const MAX_MONTHLY_CHANGE_KCAL = 250;
+/** Maksymalna zmiana celu przy jednym (tygodniowym) przeliczeniu. */
+export const MAX_WEEKLY_CHANGE_KCAL = 100;
+/** …i nie więcej niż tyle procent poprzedniego celu. */
+export const MAX_WEEKLY_CHANGE_PCT = 10;
+/** Deficyt nie większy niż tyle procent zapotrzebowania. */
+export const MAX_DEFICIT_PCT = 25;
+/** Kroki wliczone już w tryb dnia (PAL pracy) – dopiero powyżej doliczamy energię. */
+export const BASELINE_STEPS = 2500;
+/** Chodzenie: ok. 0,45 kcal na 1000 kroków na każdy kilogram masy ciała. */
+export const KCAL_PER_1000_STEPS_PER_KG = 0.45;
 
-export const ACTIVITY_LEVELS: readonly { pal: number; label: string; hint: string }[] = [
-  { pal: 1.2, label: 'Siedzący', hint: 'praca przy biurku, brak treningów' },
-  { pal: 1.375, label: 'Lekka aktywność', hint: '1–3 treningi w tygodniu lub dużo chodzenia' },
-  { pal: 1.55, label: 'Umiarkowana', hint: '3–5 treningów w tygodniu' },
-  { pal: 1.725, label: 'Duża', hint: '6–7 treningów lub praca fizyczna' },
-  { pal: 1.9, label: 'Bardzo duża', hint: 'ciężka praca fizyczna i treningi' },
+/** Tryb dnia poza treningami (NEAT). Mnożniki wg FAO/WHO/UNU dla pracy siedzącej i fizycznej. */
+export const JOB_LEVELS: readonly { pal: number; label: string; hint: string }[] = [
+  { pal: 1.15, label: 'Praca siedząca', hint: 'biuro, samochód, mało chodzenia' },
+  { pal: 1.25, label: 'Praca mieszana', hint: 'sporo chodzenia i stania w ciągu dnia' },
+  { pal: 1.4, label: 'Praca fizyczna', hint: 'cały dzień na nogach, dźwiganie' },
 ];
+
+/** Intensywność treningu w METach (Compendium of Physical Activities). */
+export const TRAINING_INTENSITIES: readonly { met: number; label: string; hint: string }[] = [
+  { met: 3.5, label: 'Lekki', hint: 'marsz, joga, spokojna rowerowa' },
+  { met: 6, label: 'Średni', hint: 'siłownia, trucht, rower 18 km/h' },
+  { met: 8.5, label: 'Mocny', hint: 'bieganie, interwały, ciężki trening' },
+];
+
+export interface ActivityProfile {
+  /** mnożnik trybu dnia poza treningami */
+  jobPal: number;
+  /** przeciętna liczba kroków dziennie */
+  dailySteps: number;
+  /** liczba treningów w tygodniu */
+  trainingDays: number;
+  /** długość jednego treningu w minutach */
+  trainingMinutes: number;
+  /** intensywność treningu w METach */
+  trainingMet: number;
+}
+
+export const DEFAULT_ACTIVITY: ActivityProfile = {
+  jobPal: 1.15,
+  dailySteps: 6000,
+  trainingDays: 3,
+  trainingMinutes: 60,
+  trainingMet: 6,
+};
 
 export interface BodyParams {
   sex: Sex;
   age: number;
   heightCm: number;
   weightKg: number;
-  pal: number;
+  activity: ActivityProfile;
+  /** procent tkanki tłuszczowej, jeśli znany (wtedy wzór Katch-McArdle) */
+  bodyFatPct?: number | null;
 }
 
+export interface EnergyEstimate {
+  bmr: number;
+  /** energia trybu dnia: BMR × PAL pracy */
+  baseKcal: number;
+  stepsKcal: number;
+  trainingKcal: number;
+  tdee: number;
+  /** wynikowy PAL = TDEE / BMR */
+  pal: number;
+}
 export interface TargetSettings {
   goal: Goal;
   /** tempo zmiany masy w % na tydzień */
@@ -41,11 +88,16 @@ export interface Macros {
 
 export interface ComputedTarget extends Macros {
   bmr: number;
+  /** zapotrzebowanie użyte do wyliczenia celu (zmierzone albo ze wzoru) */
   tdee: number;
+  /** rozbicie zapotrzebowania ze wzoru */
+  estimate: EnergyEstimate;
   /** dzienna korekta względem TDEE (ujemna = deficyt) */
   adjustment: number;
   /** true, jeśli cel podniesiono do bezpiecznego minimum */
   clampedToMinimum: boolean;
+  /** true, jeśli deficyt przycięto do 25% zapotrzebowania */
+  clampedDeficit: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -76,35 +128,65 @@ export function ageOn(birthDateIso: string, onIso: string): number {
 }
 
 /**
- * Data kolejnego przeliczenia: dzień `recalcDay` w miesiącu następującym po miesiącu,
- * od którego obowiązuje ostatni cel. Jeśli do tej daty zostało mniej niż 14 dni
- * (np. cel ustawiony 20. dnia), przeliczenie przesuwa się o kolejny miesiąc.
+ * Data kolejnego przeliczenia: najbliższy dzień tygodnia `weekday` (1 = poniedziałek)
+ * przypadający co najmniej 7 dni po `lastValidFrom`.
  */
-export function nextRecalcDate(lastValidFrom: string, recalcDay: number): string {
-  const [y, m] = lastValidFrom.split('-').map(Number);
-  let next = monthDay(y, m + 1, recalcDay);
-  if (daysBetween(lastValidFrom, next) < 14) next = monthDay(y, m + 2, recalcDay);
+export function nextRecalcDate(lastValidFrom: string, weekday: number): string {
+  let next = addDays(lastValidFrom, 7);
+  for (let i = 0; i < 7 && weekdayOf(next) !== weekday; i++) next = addDays(next, 1);
   return next;
 }
 
-function monthDay(year: number, month: number, day: number): string {
-  const y = year + Math.floor((month - 1) / 12);
-  const m = ((month - 1) % 12) + 1;
-  return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+/** Dzień tygodnia: 1 = poniedziałek … 7 = niedziela. */
+export function weekdayOf(iso: string): number {
+  return ((new Date(`${iso}T12:00:00Z`).getUTCDay() + 6) % 7) + 1;
 }
 
 // ---------------------------------------------------------------------------
 // Zapotrzebowanie
 // ---------------------------------------------------------------------------
 
-/** Mifflin-St Jeor. */
-export function bmr(p: Pick<BodyParams, 'sex' | 'age' | 'heightCm' | 'weightKg'>): number {
+/**
+ * Spoczynkowa przemiana materii. Domyślnie Mifflin-St Jeor (najdokładniejszy wzór
+ * dla osób bez otyłości – ok. 82% wyników mieści się w ±10% pomiaru). Gdy znany jest
+ * procent tkanki tłuszczowej, liczymy z masy beztłuszczowej wzorem Katch-McArdle.
+ */
+export function bmr(p: Pick<BodyParams, 'sex' | 'age' | 'heightCm' | 'weightKg' | 'bodyFatPct'>): number {
+  if (p.bodyFatPct != null && p.bodyFatPct >= 3 && p.bodyFatPct <= 60) {
+    const lean = p.weightKg * (1 - p.bodyFatPct / 100);
+    return Math.round(370 + 21.6 * lean);
+  }
   const base = 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.age;
   return Math.round(p.sex === 'male' ? base + 5 : base - 161);
 }
 
+/** Energia chodzenia ponad to, co mieści się już w trybie dnia. */
+export function stepsKcal(dailySteps: number, weightKg: number): number {
+  const extra = Math.max(0, dailySteps - BASELINE_STEPS);
+  return Math.round((extra / 1000) * KCAL_PER_1000_STEPS_PER_KG * weightKg);
+}
+
+/**
+ * Energia treningów rozłożona na dzień. Liczymy netto (MET − 1), bo energia spoczynkowa
+ * jest już w BMR – inaczej policzylibyśmy ją dwa razy.
+ */
+export function trainingKcal(a: ActivityProfile, weightKg: number): number {
+  const perSession = ((a.trainingMet - 1) * 3.5 * weightKg * a.trainingMinutes) / 200;
+  return Math.round((perSession * a.trainingDays) / 7);
+}
+
+/** Zapotrzebowanie ze wzoru: tryb dnia + kroki + treningi. */
+export function estimateTdee(p: BodyParams): EnergyEstimate {
+  const b = bmr(p);
+  const base = Math.round(b * p.activity.jobPal);
+  const steps = stepsKcal(p.activity.dailySteps, p.weightKg);
+  const training = trainingKcal(p.activity, p.weightKg);
+  const total = base + steps + training;
+  return { bmr: b, baseKcal: base, stepsKcal: steps, trainingKcal: training, tdee: total, pal: Math.round((total / b) * 100) / 100 };
+}
+
 export function tdee(p: BodyParams): number {
-  return Math.round(bmr(p) * p.pal);
+  return estimateTdee(p).tdee;
 }
 
 /** Dzienna korekta kcal wynikająca z celu i tempa (ujemna = deficyt). */
@@ -127,29 +209,37 @@ export function macrosFor(kcal: number, weightKg: number, s: Pick<TargetSettings
   return { kcal, protein_g: protein, carbs_g: carbs, fat_g: fat };
 }
 
-/** Cel z wzoru; opcjonalnie z TDEE wyliczonym z danych (adaptacyjnie). */
+/**
+ * Cel dzienny. `measured` (TDEE policzone z dziennika i wagi) ma pierwszeństwo przed wzorem.
+ * Deficyt ograniczamy do 25% zapotrzebowania, a całość do bezpiecznego minimum.
+ */
 export function computeTarget(body: BodyParams, settings: TargetSettings, measuredTdee?: number): ComputedTarget {
-  const b = bmr(body);
-  const t = measuredTdee ?? tdee(body);
-  const adjustment = dailyAdjustment(settings.goal, settings.weeklyRatePct, body.weightKg);
-  const min = minimumKcal(body.sex, b);
+  const estimate = estimateTdee(body);
+  const t = measuredTdee ?? estimate.tdee;
+  const wanted = dailyAdjustment(settings.goal, settings.weeklyRatePct, body.weightKg);
+  const maxDeficit = Math.round((t * MAX_DEFICIT_PCT) / 100);
+  const adjustment = wanted < 0 ? Math.max(wanted, -maxDeficit) : wanted;
+  const min = minimumKcal(body.sex, estimate.bmr);
   const raw = t + adjustment;
   const kcal = roundTo(Math.max(raw, min), 10);
   return {
     ...macrosFor(kcal, body.weightKg, settings),
-    bmr: b,
+    bmr: estimate.bmr,
     tdee: t,
+    estimate,
     adjustment,
     clampedToMinimum: raw < min,
+    clampedDeficit: adjustment !== wanted,
   };
 }
 
-/** Ogranicza comiesięczną zmianę celu, żeby uniknąć skoków. */
-export function limitMonthlyChange(previousKcal: number | null, nextKcal: number): number {
+/** Ogranicza tygodniową zmianę celu: najwyżej 100 kcal i najwyżej 10% poprzedniego celu. */
+export function limitWeeklyChange(previousKcal: number | null, nextKcal: number): number {
   if (previousKcal === null) return nextKcal;
+  const limit = Math.min(MAX_WEEKLY_CHANGE_KCAL, Math.round((previousKcal * MAX_WEEKLY_CHANGE_PCT) / 100));
   const diff = nextKcal - previousKcal;
-  if (Math.abs(diff) <= MAX_MONTHLY_CHANGE_KCAL) return nextKcal;
-  return previousKcal + Math.sign(diff) * MAX_MONTHLY_CHANGE_KCAL;
+  if (Math.abs(diff) <= limit) return nextKcal;
+  return previousKcal + Math.sign(diff) * limit;
 }
 
 // ---------------------------------------------------------------------------
@@ -224,22 +314,74 @@ export interface IntakeDay {
   kcal: number;
 }
 
+export interface MeasuredTdee {
+  /** zapotrzebowanie policzone z bilansu energii */
+  tdee: number;
+  /** dni z wpisami w dzienniku w oknie */
+  loggedDays: number;
+  /** liczba ważeń w oknie */
+  weighIns: number;
+  /** trend masy ciała w kg na tydzień (ujemny = spadek) */
+  slopeKgPerWeek: number;
+  /** 0–0,8: na ile ufamy pomiarowi (rośnie z liczbą dni z danymi) */
+  confidence: number;
+}
+
+/** Wygładzona masa ciała: regresja liniowa po wszystkich ważeniach w oknie. */
+export function weightSlope(weights: readonly WeightPoint[], endIso: string, days: number): { slopeKgPerDay: number; points: number; spanDays: number } | null {
+  const start = addDays(endIso, -(days - 1));
+  const pts = weights
+    .filter((w) => w.date >= start && w.date <= endIso)
+    .map((w) => ({ x: daysBetween(start, w.date), y: Number(w.weight_kg) }))
+    .sort((a, b) => a.x - b.x);
+  if (pts.length < 2) return null;
+  const n = pts.length;
+  const mx = pts.reduce((s, p) => s + p.x, 0) / n;
+  const my = pts.reduce((s, p) => s + p.y, 0) / n;
+  const varX = pts.reduce((s, p) => s + (p.x - mx) ** 2, 0);
+  if (varX === 0) return null;
+  const cov = pts.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0);
+  return { slopeKgPerDay: cov / varX, points: n, spanDays: pts[n - 1].x - pts[0].x };
+}
+
 /**
- * Rzeczywiste TDEE = średnie spożycie − zmiana zapasów energii / liczba dni.
- * Zwraca null, gdy danych jest za mało (min. 21 dni i 80% dni z wpisami w dzienniku).
+ * Rzeczywiste zapotrzebowanie z bilansu energii:
+ * TDEE = średnie spożycie − (zmiana masy × 7700 kcal/kg) / dzień.
+ * Trend masy liczymy regresją, żeby wahania wody nie psuły wyniku.
+ * Wymagamy min. 10 dni z dziennikiem, 4 ważeń i 14 dni rozstępu między pierwszym a ostatnim ważeniem.
  */
-export function adaptiveTdee(intake: readonly IntakeDay[], weights: readonly WeightPoint[], endIso: string, days = 28): number | null {
+export function measureTdee(
+  intake: readonly IntakeDay[],
+  weights: readonly WeightPoint[],
+  endIso: string,
+  days = 28,
+): MeasuredTdee | null {
   const start = addDays(endIso, -(days - 1));
   const logged = intake.filter((d) => d.date >= start && d.date <= endIso && d.kcal > 0);
-  if (days < 21 || logged.length < days * 0.8) return null;
-  const startAvg = windowAverage(weights, addDays(start, 6), 7, 3);
-  const endAvg = windowAverage(weights, endIso, 7, 3);
-  if (startAvg === null || endAvg === null) return null;
+  const slope = weightSlope(weights, endIso, days);
+  if (logged.length < 10 || !slope || slope.points < 4 || slope.spanDays < 14) return null;
   const avgIntake = logged.reduce((s, d) => s + d.kcal, 0) / logged.length;
-  // średnie tygodniowe są odległe o (days - 7) dni
-  const span = days - 7;
-  const estimate = avgIntake - ((endAvg - startAvg) * KCAL_PER_KG_FAT) / span;
-  return Math.round(estimate);
+  const tdeeValue = Math.round(avgIntake - slope.slopeKgPerDay * KCAL_PER_KG_FAT);
+  const coverage = Math.min(1, logged.length / days) * Math.min(1, slope.points / (days / 2));
+  return {
+    tdee: tdeeValue,
+    loggedDays: logged.length,
+    weighIns: slope.points,
+    slopeKgPerWeek: Math.round(slope.slopeKgPerDay * 7 * 100) / 100,
+    confidence: Math.round(Math.min(0.8, coverage * 0.8) * 100) / 100,
+  };
+}
+
+/**
+ * Łączy zapotrzebowanie ze wzoru z tym zmierzonym z danych. Pomiar wchodzi tym mocniej,
+ * im więcej dni jest zalogowanych, i nigdy nie odchyla wyniku o więcej niż 25% od wzoru
+ * (zabezpieczenie przed niedoszacowanym dziennikiem i chorymi tygodniami).
+ */
+export function blendTdee(formulaTdee: number, measured: MeasuredTdee | null): { tdee: number; confidence: number; used: 'formula' | 'blend' } {
+  if (!measured) return { tdee: formulaTdee, confidence: 0, used: 'formula' };
+  const clamped = Math.min(Math.max(measured.tdee, formulaTdee * 0.75), formulaTdee * 1.25);
+  const w = measured.confidence;
+  return { tdee: Math.round(w * clamped + (1 - w) * formulaTdee), confidence: w, used: 'blend' };
 }
 
 function roundTo(value: number, step: number): number {

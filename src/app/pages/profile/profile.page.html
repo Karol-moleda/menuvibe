@@ -19,7 +19,7 @@
           <ion-card-subtitle>Brakuje: {{ store.missingFields().join(', ') }}</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
-          <p>Na tej podstawie policzę Twoje dzienne zapotrzebowanie i będę je aktualizować co miesiąc.</p>
+          <p>Na tej podstawie policzę Twoje dzienne zapotrzebowanie i będę je aktualizować co tydzień.</p>
           <ion-button routerLink="/profil/dane" expand="block">Uzupełnij dane</ion-button>
         </ion-card-content>
       </ion-card>
@@ -64,6 +64,37 @@
         </div>
       </ion-card-content>
     </ion-card>
+
+    <!-- Zapotrzebowanie na żywo -->
+    @if (store.energy(); as e) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Zapotrzebowanie (na żywo)</ion-card-subtitle>
+          <ion-card-title class="kcal">{{ e.tdee }} <small>kcal</small></ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ul class="energy">
+            <li><span>Przemiana spoczynkowa</span><strong>{{ e.estimate.bmr }} kcal</strong></li>
+            <li><span>Tryb dnia (×{{ e.estimate.pal }} łącznie)</span><strong>{{ e.estimate.baseKcal - e.estimate.bmr }} kcal</strong></li>
+            <li><span>Chodzenie</span><strong>{{ e.estimate.stepsKcal }} kcal</strong></li>
+            <li><span>Treningi</span><strong>{{ e.estimate.trainingKcal }} kcal</strong></li>
+            <li class="sum"><span>Razem ze wzoru</span><strong>{{ e.estimate.tdee }} kcal</strong></li>
+          </ul>
+          @if (e.measured; as m) {
+            <p class="meta">
+              Z Twoich danych (ostatnie 28 dni): <strong>{{ m.tdee }} kcal</strong> –
+              {{ m.loggedDays }} dni dziennika, {{ m.weighIns }} ważeń, waga {{ signed(m.slopeKgPerWeek, 2) }} kg/tydz.
+              Wynik powyżej łączy wzór z pomiarem (udział pomiaru: {{ (e.confidence * 100).toFixed(0) }}%).
+            </p>
+          } @else {
+            <p class="meta">
+              Licz posiłki i waż się codziennie – po ok. 2 tygodniach (min. 10 dni dziennika i 4 ważenia)
+              policzę Twoje prawdziwe zapotrzebowanie z bilansu energii.
+            </p>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
 
     <!-- Waga -->
     <ion-card>
@@ -131,7 +162,8 @@
           <ion-item><ion-label>Płeć</ion-label><ion-note slot="end">{{ s.sex }}</ion-note></ion-item>
           <ion-item><ion-label>Wiek</ion-label><ion-note slot="end">{{ s.age }}</ion-note></ion-item>
           <ion-item><ion-label>Wzrost</ion-label><ion-note slot="end">{{ s.height }}</ion-note></ion-item>
-          <ion-item><ion-label>Aktywność</ion-label><ion-note slot="end">{{ s.activity }}</ion-note></ion-item>
+          <ion-item><ion-label>Tryb dnia</ion-label><ion-note slot="end">{{ s.activity }}</ion-note></ion-item>
+          <ion-item><ion-label>Treningi</ion-label><ion-note slot="end">{{ s.training }}</ion-note></ion-item>
           <ion-item><ion-label>Cel</ion-label><ion-note slot="end">{{ s.goal }}</ion-note></ion-item>
         </ion-list>
         <ion-card-content>

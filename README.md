@@ -79,6 +79,27 @@ supabase functions deploy ai-chat
 Opcjonalnie: `supabase secrets set ANTHROPIC_MODEL=<model>` (domyślnie `claude-sonnet-4-5`)
 i `AI_DAILY_LIMIT=40` (dzienny limit pytań). Testy logiki funkcji: `deno test supabase/functions/ai-chat`.
 
+## Jak liczone są kalorie
+
+- **Przemiana spoczynkowa (BMR):** Mifflin-St Jeor – najdokładniejszy wzór dla osób bez otyłości
+  (ok. 82% wyników w granicach ±10% pomiaru). Gdy podasz procent tkanki tłuszczowej, aplikacja
+  przechodzi na Katch-McArdle (370 + 21,6 × masa beztłuszczowa).
+- **Zapotrzebowanie (TDEE)** liczone jest ze składników, a nie z jednego mnożnika „aktywność”:
+  `BMR × tryb dnia (1,15–1,4) + kroki + treningi`.
+  Kroki: 0,45 kcal na 1000 kroków na kg masy, licząc powyżej 2500 kroków.
+  Treningi: `(MET − 1) × 3,5 × kg / 200 × minuty`, netto (bez energii spoczynkowej), rozłożone na tydzień.
+- **Zapotrzebowanie z danych:** gdy masz min. 10 dni dziennika i 4 ważenia z co najmniej 14 dni,
+  aplikacja liczy `średnie spożycie − zmiana masy × 7700 kcal/kg / dzień`. Trend masy liczy regresją,
+  żeby wahania wody nie psuły wyniku. Wynik jest mieszany ze wzorem (waga rośnie z liczbą dni z danymi,
+  najwyżej 0,8) i nigdy nie odchyla się o więcej niż 25% od wzoru.
+- **Cel:** zapotrzebowanie + korekta z tempa (% masy ciała na tydzień × 7700 / 7). Deficyt najwyżej 25%
+  zapotrzebowania, cel nigdy poniżej BMR ani poniżej 1500 kcal (mężczyźni) / 1200 kcal (kobiety).
+- **Przeliczanie:** raz w tygodniu, w wybrany dzień, zmiana najwyżej o 100 kcal i 10% naraz.
+
+Źródła: Frankenfield i in. 2005 (dokładność wzorów BMR), FAO/WHO/UNU 2001 (PAL),
+Compendium of Physical Activities (METy), Hall i in. / NIDDK Body Weight Planner (bilans energii,
+adaptacja metaboliczna).
+
 ## Testy
 
 ```bash
