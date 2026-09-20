@@ -8817,7 +8817,7 @@
   },
   {
    "name": "Bagietka z szynką i jajkiem",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 695,
@@ -8903,7 +8903,7 @@
   },
   {
    "name": "Bowl jogurtowy z owocami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 693,
@@ -8988,7 +8988,7 @@
   },
   {
    "name": "Ciasto cytrynowe jednoporcjowe",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 682,
@@ -9099,7 +9099,7 @@
   },
   {
    "name": "Czekoladowe smoothie",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 685,
@@ -9175,7 +9175,7 @@
   },
   {
    "name": "Czekoladowy koktajl z awokado",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 694,
@@ -9251,7 +9251,7 @@
   },
   {
    "name": "Domowa granola z bananem oraz malinami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 691,
@@ -9330,7 +9330,7 @@
   },
   {
    "name": "Energetyzujące smoothie banan, pomarańcza, kurkuma oraz imbir",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 682,
@@ -9407,7 +9407,7 @@
   },
   {
    "name": "Jagodowy koktajl z tapioką",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 688,
@@ -9478,7 +9478,7 @@
   },
   {
    "name": "Jogurt proteinowy z pieczonymi owocami i domową granolą",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 706,
@@ -9579,7 +9579,7 @@
   },
   {
    "name": "Jogurt skyr + wafle ryżowe + orzechy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 698,
@@ -9634,7 +9634,7 @@
   },
   {
    "name": "Jogurt skyr z miodem oraz orzechami włoskimi",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 694,
@@ -9698,7 +9698,7 @@
   },
   {
    "name": "Jogurt z borówkami oraz orzechami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 674,
@@ -9754,7 +9754,7 @@
   },
   {
    "name": "Jogurt z borówkami oraz orzechami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 683,
@@ -9809,7 +9809,7 @@
   },
   {
    "name": "Jogurt z nasionami chia i owocami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 684,
@@ -9887,7 +9887,7 @@
   },
   {
    "name": "Kanapki z ziołowym twarożkiem",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 717,
@@ -9979,7 +9979,7 @@
   },
   {
    "name": "Kasza jaglana z jogurtem",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 689,
@@ -10138,7 +10138,7 @@
   },
   {
    "name": "Kefir z orzechami i owocami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 701,
@@ -10186,7 +10186,7 @@
   },
   {
    "name": "Koktajl a la Rafaello",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 721,
@@ -10256,7 +10256,7 @@
   },
   {
    "name": "Koktajl bananowy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 691,
@@ -10318,7 +10318,7 @@
   },
   {
    "name": "Koktajl brzoskwiniowy z awokado",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 697,
@@ -10380,7 +10380,7 @@
   },
   {
    "name": "Koktajl czekoladowy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 701,
@@ -10449,7 +10449,7 @@
   },
   {
    "name": "Koktajl kefir z brzoskwinią oraz orzechami nerkowca",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 692,
@@ -10504,7 +10504,7 @@
   },
   {
    "name": "Koktajl kokosowy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 688,
@@ -10587,7 +10587,7 @@
   },
   {
    "name": "Koktajl malinowy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 696,
@@ -10664,7 +10664,7 @@
   },
   {
    "name": "Koktajl mango lassi",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 694,
@@ -10734,7 +10734,7 @@
   },
   {
    "name": "Koktajl mango marakuja",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 706,
@@ -10804,7 +10804,7 @@
   },
   {
    "name": "Koktajl marchewkowy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 696,
@@ -10881,7 +10881,7 @@
   },
   {
    "name": "Koktajl orzechowo-bananowy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 676,
@@ -10950,7 +10950,7 @@
   },
   {
    "name": "Koktajl z nektarynki",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 691,
@@ -11019,7 +11019,7 @@
   },
   {
    "name": "Koktajl z pomarańczą, grejpfrutem, jabłkiem oraz bananem",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 703,
@@ -11095,7 +11095,7 @@
   },
   {
    "name": "Koktajl zielony",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 704,
@@ -11171,7 +11171,7 @@
   },
   {
    "name": "Kremowy koktajl z banana oraz mango",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 707,
@@ -11388,7 +11388,7 @@
   },
   {
    "name": "Muffiny marchewkowe",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 4,
    "per_serving": {
     "kcal": 681,
@@ -11579,7 +11579,7 @@
   },
   {
    "name": "Orzeźwiające smoothie z jabłka, banana oraz ananasa",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 697,
@@ -11648,7 +11648,7 @@
   },
   {
    "name": "Orzeźwiające smoothie z truskawkami oraz jogurtem skyr",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 678,
@@ -11711,7 +11711,7 @@
   },
   {
    "name": "Owoce z jogurtem roślinnym",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 698,
@@ -11788,7 +11788,7 @@
   },
   {
    "name": "Owsianka z masłem orzechowym",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 706,
@@ -11852,7 +11852,7 @@
   },
   {
    "name": "Pieczona owsianka z gruszką oraz imbirem mielonym",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 707,
@@ -11971,7 +11971,7 @@
   },
   {
    "name": "Pieczone owoce leśne pod kruszonką z granoli",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 710,
@@ -12051,7 +12051,7 @@
   },
   {
    "name": "Proteinowy koktajl z mango",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 678,
@@ -12127,7 +12127,7 @@
   },
   {
    "name": "Puszysty zapiekany serek wiejski",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 711,
@@ -12231,7 +12231,7 @@
   },
   {
    "name": "Roślinne smoothie banan, truskawki oraz mięta",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 697,
@@ -12308,7 +12308,7 @@
   },
   {
    "name": "Serek wiejski z miodem, orzechami włoskimi oraz gruszką",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 707,
@@ -12372,7 +12372,7 @@
   },
   {
    "name": "Serek wiejski z ogórkiem, suszonymi pomidorami oraz chlebem razowym",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 674,
@@ -12464,7 +12464,7 @@
   },
   {
    "name": "Serek wiejski z owocami i orzechami włoskimi",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 680,
@@ -12527,7 +12527,7 @@
   },
   {
    "name": "Serek wiejski z owocami i płatkami jaglanymi",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 697,
@@ -12591,7 +12591,7 @@
   },
   {
    "name": "Serek wiejski z warzywami i pieczywem",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 701,
@@ -12655,7 +12655,7 @@
   },
   {
    "name": "Shake bananowy z daktylami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 690,
@@ -12819,7 +12819,7 @@
   },
   {
    "name": "Smoothie na mleku z kakao i orzechami włoskimi",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 713,
@@ -12888,7 +12888,7 @@
   },
   {
    "name": "Smoothie truskawki, ogórek oraz bazylia świeża",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 709,
@@ -12964,7 +12964,7 @@
   },
   {
    "name": "Smoothie z jarmużem, bananem oraz masłem orzechowym",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 696,
@@ -13040,7 +13040,7 @@
   },
   {
    "name": "Smoothie z mango oraz banana na mleku",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 696,
@@ -13116,7 +13116,7 @@
   },
   {
    "name": "Smoothie z mango oraz pomarańczy",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 650,
@@ -13280,7 +13280,7 @@
   },
   {
    "name": "Twarożek meksykański",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 684,
@@ -13381,7 +13381,7 @@
   },
   {
    "name": "Twarożek z miodem oraz malinami",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 713,
@@ -13445,7 +13445,7 @@
   },
   {
    "name": "Zielony twarożek",
-   "slot": "lunch",
+   "slot": "dinner",
    "servings": 1,
    "per_serving": {
     "kcal": 722,
@@ -13612,7 +13612,7 @@
   },
   {
    "name": "Bataty hot honey na labnehu",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 799,
@@ -13726,7 +13726,7 @@
   },
   {
    "name": "Buddha bowl z kurczakiem oraz ananasem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 785,
@@ -13870,7 +13870,7 @@
   },
   {
    "name": "Chilli z mięsem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 801,
@@ -14015,7 +14015,7 @@
   },
   {
    "name": "Curry z ciecierzycy",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 776,
@@ -14117,7 +14117,7 @@
   },
   {
    "name": "Cynamonowe gnocchi",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 798,
@@ -14190,7 +14190,7 @@
   },
   {
    "name": "Delikatny makrela z komosą ryżową",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 796,
@@ -14305,7 +14305,7 @@
   },
   {
    "name": "Domowe danie makaronowe na słodko",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 807,
@@ -14376,7 +14376,7 @@
   },
   {
    "name": "Domowe spaghetti",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 804,
@@ -14487,7 +14487,7 @@
   },
   {
    "name": "Gnocchi na słodko z miodem, twarożkiem i borówkami",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 805,
@@ -14575,7 +14575,7 @@
   },
   {
    "name": "Gołąbki bez zawijania z ziemniakami",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 807,
@@ -14701,7 +14701,7 @@
   },
   {
    "name": "Grillowana ryba z ziołami i cytryną",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 807,
@@ -14812,7 +14812,7 @@
   },
   {
    "name": "Gulasz z indyka z warzywami i pęczakiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 815,
@@ -14943,7 +14943,7 @@
   },
   {
    "name": "Halloumi z sosem warzywnym i ryżem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 819,
@@ -15045,7 +15045,7 @@
   },
   {
    "name": "Intensywnie ziołowa sałatka Caprese z makaronem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 825,
@@ -15183,7 +15183,7 @@
   },
   {
    "name": "Jajka sadzone z młodymi ziemniakami i kapustą zasmażaną",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 798,
@@ -15278,7 +15278,7 @@
   },
   {
    "name": "Kasza jęczmienna perłowa z ciecierzycą w sosie meksykańskim",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 703,
@@ -15378,7 +15378,7 @@
   },
   {
    "name": "Kaszotto buraczane z ciecierzycą oraz mozzarellą",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 824,
@@ -15494,7 +15494,7 @@
   },
   {
    "name": "Kolorowy talerz warzywno-makaronowy z kurczakiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 792,
@@ -15618,7 +15618,7 @@
   },
   {
    "name": "Krupnik z kaszą jaglaną",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 810,
@@ -15714,7 +15714,7 @@
   },
   {
    "name": "Kurczak curry",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 775,
@@ -15856,7 +15856,7 @@
   },
   {
    "name": "Kurczak pieczony z warzywami i ziemniakami",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 808,
@@ -15991,7 +15991,7 @@
   },
   {
    "name": "Kurczak pieczony z ziemniakami",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 783,
@@ -16101,7 +16101,7 @@
   },
   {
    "name": "Kurczak z tymiankiem suszonym, pieczonymi ziemniakami i surówką z marchwi i jabłka",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 797,
@@ -16203,7 +16203,7 @@
   },
   {
    "name": "Leczo z kurczakiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 811,
@@ -16326,7 +16326,7 @@
   },
   {
    "name": "Makaron po włosku z dodatkiem jarmużu oraz mozzarelli",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 703,
@@ -16426,7 +16426,7 @@
   },
   {
    "name": "Makaron z indykiem, suszonymi pomidorami oraz jarmużem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 805,
@@ -16530,7 +16530,7 @@
   },
   {
    "name": "Makaron z pesto pietruszkowym",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 683,
@@ -16610,7 +16610,7 @@
   },
   {
    "name": "Makaron z pieczonymi warzywami i mozzarellą",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 792,
@@ -16725,7 +16725,7 @@
   },
   {
    "name": "Makaron z sosem pomidorowym z ricottą",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 805,
@@ -16826,7 +16826,7 @@
   },
   {
    "name": "Makaron z zielonym sosem z awokado i kurczakiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 809,
@@ -16946,7 +16946,7 @@
   },
   {
    "name": "Makrela w sosie musztardowo-miodowym z ryżem oraz brokułem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 788,
@@ -17042,7 +17042,7 @@
   },
   {
    "name": "Młode ziemniaczki z jajkiem sadzonym, mizerią i zsiadłym mlekiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 799,
@@ -17164,7 +17164,7 @@
   },
   {
    "name": "Naleśniki meksykańskie",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 828,
@@ -17346,7 +17346,7 @@
   },
   {
    "name": "Pieczone udko kurczęce",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 802,
@@ -17477,7 +17477,7 @@
   },
   {
    "name": "Pieczone warzywa z ricottą i pomidorkami koktajlowymi",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 793,
@@ -17583,7 +17583,7 @@
   },
   {
    "name": "Pieczone ziemniaki z gzikiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 826,
@@ -17681,7 +17681,7 @@
   },
   {
    "name": "Pieczony dorsz z kaszą jaglaną i warzywami",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 794,
@@ -17784,7 +17784,7 @@
   },
   {
    "name": "Pierś z kurczaka z ryżem i mrożonką meksykańską",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 843,
@@ -17901,7 +17901,7 @@
   },
   {
    "name": "Polędwica wieprzowa z tymiankiem suszonym, pęczakiem, marchwią oraz pomidorkami koktajlowymi",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 801,
@@ -18021,7 +18021,7 @@
   },
   {
    "name": "Pstrąg tęczowy z batatami i mizerią",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 798,
@@ -18124,7 +18124,7 @@
   },
   {
    "name": "Pęczak z burakiem, mozzarellą oraz orzechami włoskimi",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 797,
@@ -18304,7 +18304,7 @@
   },
   {
    "name": "Risotto z dynią i mozzarellą",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 710,
@@ -18423,7 +18423,7 @@
   },
   {
    "name": "Rosół",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 2,
    "per_serving": {
     "kcal": 802,
@@ -18562,7 +18562,7 @@
   },
   {
    "name": "Ryż smażony z warzywami i imbirem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 790,
@@ -18777,7 +18777,7 @@
   },
   {
    "name": "Sałatka z batatem oraz indykiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 812,
@@ -18947,7 +18947,7 @@
   },
   {
    "name": "Sałatka z makrelą i ziemniakami",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 794,
@@ -19066,7 +19066,7 @@
   },
   {
    "name": "Spaghetti z kurczakiem oraz pomidorkami koktajlowymi",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 787,
@@ -19169,7 +19169,7 @@
   },
   {
    "name": "Strogonow z ryżem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 807,
@@ -19296,7 +19296,7 @@
   },
   {
    "name": "Szybki makaron z indykiem duszonym w pomidorach",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 792,
@@ -19405,7 +19405,7 @@
   },
   {
    "name": "Słoneczny lunch z kurczakiem, mango i pęczakiem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 812,
@@ -19547,7 +19547,7 @@
   },
   {
    "name": "Warzywne danie z makaronem, mozzarellą i kremowym pesto",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 813,
@@ -19675,7 +19675,7 @@
   },
   {
    "name": "Warzywny sos z mięsem mielonym i makaronem",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 798,
@@ -19824,7 +19824,7 @@
   },
   {
    "name": "Zapiekanka ziemniaczana z bakłażanem i cukinią",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 714,
@@ -20000,7 +20000,7 @@
   },
   {
    "name": "Ziemniaki, jajko sadzone i ogórki małosolne",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 702,
@@ -20079,7 +20079,7 @@
   },
   {
    "name": "Zupa krem z pomidorów z pestkami dyni",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 714,
@@ -20188,7 +20188,7 @@
   },
   {
    "name": "Śródziemnomorski tzatziki bowl",
-   "slot": "dinner",
+   "slot": "lunch",
    "servings": 1,
    "per_serving": {
     "kcal": 787,

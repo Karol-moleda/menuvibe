@@ -8,8 +8,8 @@ ING = re.compile(r"^(?P<name>.+?) – (?P<measure>.+?)$")
 GRAMS = re.compile(r"\(([\d.,]+) ?(g|ml)\)\s*$|^([\d.,]+) ?(g|ml)$")
 STEP_X = 350  # kroki przepisu zaczynają się w prawej kolumnie
 
-# Posiłek Respo -> slot aplikacji (na podstawie godzin w PDF)
-SLOT = {1: "breakfast", 2: "lunch", 3: "dinner", 4: "snack"}
+# Posiłek Respo -> slot aplikacji (posiłek 2 jem na kolację, 3 na obiad)
+SLOT = {1: "breakfast", 2: "dinner", 3: "lunch", 4: "snack"}
 
 
 def rows_of(chars, tol=2.5):
