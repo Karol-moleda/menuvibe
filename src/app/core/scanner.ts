@@ -2,14 +2,20 @@ import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { BarcodeFormat, BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
-/** Skaner kodów kreskowych (Google ML Kit). Działa tylko w aplikacji na telefonie. */
+/**
+ * Skaner kodów kreskowych.
+ * - APK: Google ML Kit (natywny ekran skanowania),
+ * - PWA/przeglądarka: aparat + BarcodeDetector (komponent WebScannerComponent).
+ */
 @Injectable({ providedIn: 'root' })
 export class ScannerService {
-  readonly available = Capacitor.isNativePlatform();
+  readonly native = Capacitor.isNativePlatform();
+  /** Czy da się skanować: natywnie albo aparatem w przeglądarce (wymaga HTTPS). */
+  readonly available = this.native || (typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && isSecureContext);
 
-  /** Otwiera ekran skanowania; zwraca kod albo null, gdy anulowano. */
+  /** Natywny skaner ML Kit; zwraca kod albo null, gdy anulowano. */
   async scan(): Promise<string | null> {
-    if (!this.available) return null;
+    if (!this.native) return null;
     const { supported } = await BarcodeScanner.isSupported();
     if (!supported) throw new Error('Ten telefon nie obsługuje skanera kodów.');
 

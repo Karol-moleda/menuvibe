@@ -34,7 +34,7 @@
     </div>
   } @else if (showHome()) {
     <ion-text color="medium">
-      <p class="ion-padding-horizontal hint">Skaner działa w aplikacji na telefonie. Tutaj możesz wpisać kod EAN w wyszukiwarkę.</p>
+      <p class="ion-padding-horizontal hint">Skaner wymaga aparatu i bezpiecznego połączenia (https). Możesz też wpisać kod EAN w wyszukiwarkę.</p>
     </ion-text>
   }
 
@@ -124,6 +124,13 @@
       Dodaj własny produkt
     </ion-button>
   </div>
+
+  <!-- skaner aparatem w przeglądarce (PWA) -->
+  <ion-modal [isOpen]="webScanning()" (didDismiss)="webScanning.set(false)">
+    <ng-template>
+      <app-web-scanner (closed)="onWebScan($event)" />
+    </ng-template>
+  </ion-modal>
 
   <!-- gramatura i dodanie -->
   <ion-modal [isOpen]="selected() !== null" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]" (didDismiss)="selected.set(null)">

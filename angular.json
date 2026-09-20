@@ -35,6 +35,11 @@
                 "glob": "recipes.json",
                 "input": "data",
                 "output": "data"
+              },
+              {
+                "glob": "zxing_reader.wasm",
+                "input": "node_modules/zxing-wasm/dist/reader",
+                "output": "zxing"
               }
             ],
             "styles": [
@@ -55,7 +60,8 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,

@@ -37,7 +37,24 @@ pierwsze konto (od razu potwierdzone), a każdą kolejną rejestrację odrzuca.
 npm start      # http://localhost:4200
 ```
 
-## APK na telefon
+## Instalacja na telefonie (PWA) – zalecane
+
+Aplikacja działa jako instalowalna strona (PWA) hostowana na Netlify. Każdy `git push` publikuje nową wersję,
+a telefon pokazuje „Jest nowa wersja – Odśwież”.
+
+1. Utwórz **prywatne** repozytorium na GitHubie (bez README) i wypchnij kod:
+   ```bash
+   git branch -M main
+   git remote add origin https://github.com/<login>/menuvibe.git
+   git push -u origin main
+   ```
+2. Na [app.netlify.com](https://app.netlify.com) zaloguj się przez GitHub → **Add new site → Import an existing project →
+   GitHub** → wybierz repozytorium → **Deploy**. Ustawienia buildu są w `netlify.toml`.
+3. Na telefonie otwórz adres strony (np. `https://menuvibe-xyz.netlify.app`) w **Chrome** → menu ⋮ → **Zainstaluj aplikację**.
+
+Skaner kodów w PWA używa aparatu przez przeglądarkę (BarcodeDetector, a gdzie go brak – ZXing w WebAssembly).
+
+## APK na telefon (opcjonalnie)
 
 ```bash
 npm run android            # build + sync + otwiera Android Studio

@@ -33,6 +33,7 @@ import { OffProduct, OpenFoodFactsClient, isValidEan, nutritionFor } from '../..
 import { SLOT_LABELS } from '../../core/planner';
 import { ProductStore } from '../../core/product.store';
 import { ScannerService } from '../../core/scanner';
+import { WebScannerComponent } from '../../shared/web-scanner';
 
 /** Produkt wybrany do dodania – z własnej bazy albo prosto z Open Food Facts. */
 interface Selected {
@@ -70,6 +71,7 @@ interface Selected {
     IonModal,
     IonInput,
     IonChip,
+    WebScannerComponent,
   ],
   templateUrl: './product-search.page.html',
   styleUrl: './product-search.page.scss',
@@ -96,6 +98,8 @@ export class ProductSearchPage {
   protected readonly selected = signal<Selected | null>(null);
   protected readonly grams = signal(100);
   protected readonly saving = signal(false);
+  /** skaner aparatem w przeglądarce (PWA) */
+  protected readonly webScanning = signal(false);
 
   protected readonly localResults = computed(() => this.products.searchLocal(this.query()).slice(0, 15));
   protected readonly showHome = computed(() => !this.query().trim());
@@ -147,12 +151,21 @@ export class ProductSearchPage {
   }
 
   async scan(): Promise<void> {
+    if (!this.scanner.native) {
+      this.webScanning.set(true);
+      return;
+    }
     try {
       const code = await this.scanner.scan();
       if (code) await this.lookupEan(code);
     } catch (e) {
       await this.showToast(errorMessage(e), 'danger');
     }
+  }
+
+  async onWebScan(code: string | null): Promise<void> {
+    this.webScanning.set(false);
+    if (code) await this.lookupEan(code);
   }
 
   private async lookupEan(ean: string): Promise<void> {
