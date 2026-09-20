@@ -1,0 +1,124 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Czat z Claude</ion-title>
+    @if (chat.messages().length) {
+      <ion-buttons slot="end">
+        <ion-button (click)="clear()" aria-label="Wyczyść rozmowę">
+          <ion-icon slot="icon-only" name="trash-outline" />
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (!chat.loaded()) {
+    <div class="center"><ion-spinner name="crescent" aria-label="Ładowanie" /></div>
+  } @else if (!chat.messages().length) {
+    <div class="intro">
+      <h2>Na co masz ochotę?</h2>
+      <p>Napisz, na jaki posiłek i co masz w lodówce. Dopasuję przepis do kalorii, które Ci zostały.</p>
+      <div class="suggestions">
+        @for (s of suggestions; track s) {
+          <ion-chip outline color="primary" (click)="useSuggestion(s)">{{ s }}</ion-chip>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="messages" role="log" aria-live="polite">
+    @for (m of chat.messages(); track m.id) {
+      <div class="bubble" [class.user]="m.role === 'user'" [class.error]="m.error">
+        @if (m.pending) {
+          <span class="typing"><ion-spinner name="dots" aria-label="Claude pisze" /></span>
+        } @else {
+          <p>{{ m.content }}</p>
+        }
+      </div>
+
+      @for (r of m.recipes; track $index) {
+        @let key = cardKey(m, $index);
+        <article class="recipe">
+          <header (click)="toggle(key)">
+            <div>
+              <span class="slot">{{ slotLabels[r.slot] }}</span>
+              <h3>{{ r.name }}</h3>
+              <p class="macros">
+                <strong>{{ r.per_serving.kcal }} kcal</strong> · B {{ r.per_serving.protein_g }} · W {{ r.per_serving.carbs_g }} · T {{ r.per_serving.fat_g }}
+                @if (r.prep_minutes) {
+                  · <ion-icon name="time-outline" aria-hidden="true" /> {{ r.prep_minutes }} min
+                }
+              </p>
+            </div>
+            <ion-icon [name]="expanded().has(key) ? 'chevron-up-outline' : 'chevron-down-outline'" aria-hidden="true" />
+          </header>
+
+          @if (expanded().has(key)) {
+            <section class="details">
+              <h4>Składniki{{ r.servings > 1 ? ' (na ' + r.servings + ' porcje)' : '' }}</h4>
+              <ul>
+                @for (i of r.ingredients; track $index) {
+                  <li>
+                    <span>{{ i.name }}</span>
+                    <span>{{ i.grams }} g{{ i.household ? ' · ' + i.household : '' }}</span>
+                  </li>
+                }
+              </ul>
+              <h4>Przygotowanie</h4>
+              <ol>
+                @for (s of r.steps; track $index) {
+                  <li>{{ s }}</li>
+                }
+              </ol>
+              @if (r.note) {
+                <p class="note">{{ r.note }}</p>
+              }
+            </section>
+          }
+
+          <div class="actions">
+            <ion-button size="small" fill="outline" [disabled]="isDone(key, 'save')" (click)="save(key, r)">
+              <ion-icon slot="start" [name]="isDone(key, 'save') ? 'checkmark-outline' : 'save-outline'" />
+              {{ isDone(key, 'save') ? 'Zapisany' : 'Zapisz' }}
+            </ion-button>
+            <ion-button size="small" fill="outline" [disabled]="isDone(key, 'plan')" (click)="planToday(key, r)">
+              <ion-icon slot="start" name="calendar-outline" />
+              {{ isDone(key, 'plan') ? 'W planie' : 'Na dziś' }}
+            </ion-button>
+            <ion-button size="small" [disabled]="isDone(key, 'eat')" (click)="eat(key, r)">
+              <ion-icon slot="start" name="checkmark-outline" />
+              {{ isDone(key, 'eat') ? 'Zjedzone' : 'Zjadłem' }}
+            </ion-button>
+          </div>
+        </article>
+      }
+    }
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar class="composer">
+    @if (remaining() !== null) {
+      <div class="remaining">Zostało dziś: {{ remaining() }} kcal · wybierz posiłek</div>
+    }
+    <div class="slot-row" role="group" aria-label="Posiłek">
+      @for (s of slots; track s) {
+        <ion-chip [outline]="slot() !== s" color="primary" (click)="slot.set(slot() === s ? null : s)">{{ slotLabels[s] }}</ion-chip>
+      }
+    </div>
+    <div class="input-row">
+      <ion-textarea
+        [autoGrow]="true"
+        rows="1"
+        placeholder="Np. mam jajka i szpinak, co na kolację?"
+        [value]="draft()"
+        (ionInput)="draft.set($event.detail.value ?? '')"
+        (keydown)="onKeydown($event)"
+        aria-label="Wiadomość do Claude"
+      />
+      <ion-button [disabled]="!draft().trim() || chat.sending()" (click)="sendDraft()" aria-label="Wyślij">
+        <ion-icon slot="icon-only" name="send" />
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

@@ -108,6 +108,19 @@ export class PlanStore {
     await this.saveDay(item.date, this.items().map((i) => (i.id === item.id ? updated : i)), item.id);
   }
 
+  /**
+   * Wstawia przepis w plan na dany dzień i posiłek (zastępuje to, co tam było).
+   * Porcja 1 – przepisy od Claude są już dopasowane do kalorii posiłku.
+   */
+  async putOnDate(date: string, slot: MealSlot, recipeId: string): Promise<void> {
+    const plan = await this.ensurePlan(mondayOf(date));
+    const { error } = await this.db
+      .from('meal_plan_items')
+      .upsert({ plan_id: plan.id, date, slot, recipe_id: recipeId, portion_factor: 1, locked: true }, { onConflict: 'plan_id,date,slot' });
+    if (error) throw error;
+    if (plan.week_start === this.weekStart()) await this.loadWeek(plan.week_start);
+  }
+
   async setPortion(item: MealPlanItemRow, factor: number): Promise<void> {
     await this.update(item.id, { portion_factor: factor });
   }
@@ -153,7 +166,7 @@ export class PlanStore {
       .select('*')
       .single();
     if (error) throw error;
-    this.plan.set(data as MealPlanRow);
+    if (weekStart === this.weekStart()) this.plan.set(data as MealPlanRow);
     return data as MealPlanRow;
   }
 

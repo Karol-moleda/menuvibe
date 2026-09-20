@@ -2,6 +2,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase';
 import { MealSlot, RecipeIngredientRow, RecipeOrigin, RecipeRow } from './database.types';
 import { PlannerRecipe } from './planner';
+import { ingredientCategory } from './categories';
+import type { ProposedRecipe } from './chat.store';
 
 /** Format pliku data/recipes.json (wynik parsera PDF). */
 interface RecipeFile {
@@ -75,6 +77,47 @@ export class RecipeStore {
     const { error } = await this.db.from('recipes').update({ rating }).eq('id', recipeId);
     if (error) throw error;
     this.recipes.update((list) => list.map((r) => (r.id === recipeId ? { ...r, rating } : r)));
+  }
+
+  /** Zapisuje przepis zaproponowany przez Claude w bazie przepisów (trafia też do generatora tygodnia). */
+  async createFromProposal(p: ProposedRecipe): Promise<RecipeSummary> {
+    await this.load();
+    const slug = `claude-${slugify(p.name)}-${Date.now().toString(36)}`;
+    const { data, error } = await this.db
+      .from('recipes')
+      .insert({
+        slug,
+        name: p.name,
+        slot: p.slot,
+        servings: p.servings,
+        kcal: Math.round(p.per_serving.kcal),
+        protein_g: p.per_serving.protein_g,
+        carbs_g: p.per_serving.carbs_g,
+        fat_g: p.per_serving.fat_g,
+        macros_estimated: true,
+        steps: p.note ? [...p.steps, `Uwaga: ${p.note}`] : p.steps,
+        origin: 'claude',
+        prep_minutes: p.prep_minutes,
+        tags: ['od Claude'],
+      })
+      .select(SUMMARY_COLUMNS)
+      .single();
+    if (error) throw error;
+    const recipe = data as RecipeSummary;
+    const ing = await this.db.from('recipe_ingredients').insert(
+      p.ingredients.map((i, position) => ({
+        recipe_id: recipe.id,
+        position,
+        name: i.name,
+        amount: i.grams,
+        unit: 'g',
+        household: i.household,
+        category: ingredientCategory(i.name),
+      })),
+    );
+    if (ing.error) throw ing.error;
+    this.recipes.update((l) => [...l, recipe].sort((a, b) => a.name.localeCompare(b.name, 'pl')));
+    return recipe;
   }
 
   private async hasIngredients(): Promise<boolean> {
@@ -157,6 +200,17 @@ export class RecipeStore {
       this.importing.set(false);
     }
   }
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/ł/g, 'l')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40);
 }
 
 function chunks<T>(list: readonly T[], size: number): T[][] {

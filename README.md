@@ -66,6 +66,19 @@ Plik trafi do `android/app/build/outputs/apk/debug/app-debug.apk` – wyślij go
 
 Po każdej zmianie w kodzie: `npm run android:sync` i ponowne uruchomienie z Android Studio.
 
+## Czat z Claude (Edge Function)
+
+Klucz Anthropic trzymamy wyłącznie w sekretach Supabase:
+
+```bash
+supabase db push                                   # migracja z limitem zapytań
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...  # klucz z console.anthropic.com
+supabase functions deploy ai-chat
+```
+
+Opcjonalnie: `supabase secrets set ANTHROPIC_MODEL=<model>` (domyślnie `claude-sonnet-4-5`)
+i `AI_DAILY_LIMIT=40` (dzienny limit pytań). Testy logiki funkcji: `deno test supabase/functions/ai-chat`.
+
 ## Testy
 
 ```bash
