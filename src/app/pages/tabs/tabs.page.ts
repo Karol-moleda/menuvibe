@@ -3,7 +3,7 @@ import { IonIcon, IonLabel, IonTabBar, IonTabButton, IonTabs, ToastController } 
 import { BodyStore } from '../../core/body.store';
 import { signed } from '../../shared/labels';
 import { addIcons } from 'ionicons';
-import { calendarOutline, chatbubblesOutline, personOutline, restaurantOutline, todayOutline } from 'ionicons/icons';
+import { calendarOutline, footstepsOutline, personOutline, restaurantOutline, todayOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
@@ -23,9 +23,9 @@ import { calendarOutline, chatbubblesOutline, personOutline, restaurantOutline, 
           <ion-icon name="restaurant-outline" aria-hidden="true" />
           <ion-label>Przepisy</ion-label>
         </ion-tab-button>
-        <ion-tab-button tab="czat">
-          <ion-icon name="chatbubbles-outline" aria-hidden="true" />
-          <ion-label>Czat</ion-label>
+        <ion-tab-button tab="ruch">
+          <ion-icon name="footsteps-outline" aria-hidden="true" />
+          <ion-label>Ruch</ion-label>
         </ion-tab-button>
         <ion-tab-button tab="profil">
           <ion-icon name="person-outline" aria-hidden="true" />
@@ -40,7 +40,7 @@ export class TabsPage {
   private readonly toast = inject(ToastController);
 
   constructor() {
-    addIcons({ todayOutline, calendarOutline, restaurantOutline, chatbubblesOutline, personOutline });
+    addIcons({ todayOutline, calendarOutline, restaurantOutline, footstepsOutline, personOutline });
     void this.init();
   }
 

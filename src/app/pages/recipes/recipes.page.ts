@@ -13,6 +13,8 @@ import {
   IonSegment,
   IonSegmentButton,
   IonSpinner,
+  IonFab,
+  IonFabButton,
   IonText,
   IonTitle,
   IonToolbar,
@@ -41,6 +43,8 @@ import { SLOTS, SLOT_LABELS } from '../../core/planner';
     IonNote,
     IonIcon,
     IonSpinner,
+    IonFab,
+    IonFabButton,
     IonText,
   ],
   template: `
@@ -99,6 +103,11 @@ import { SLOTS, SLOT_LABELS } from '../../core/planner';
           }
         </ion-list>
       }
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button routerLink="/czat" aria-label="Czat z Claude">
+          <ion-icon name="sparkles" />
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
   `,
   styles: `

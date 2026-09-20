@@ -6,11 +6,13 @@ import {
   ComputedTarget,
   TargetSettings,
   ActivityProfile,
+  MeasuredActivity,
   MeasuredTdee,
   ageOn,
   blendTdee,
   computeTarget,
   estimateTdee,
+  withMeasuredActivity,
   limitWeeklyChange,
   macrosFor,
   measureTdee,
@@ -82,12 +84,14 @@ export class BodyStore {
 
   /** Zmierzone zapotrzebowanie z dziennika i wagi (odświeżane przy wczytaniu). */
   readonly measured = signal<MeasuredTdee | null>(null);
+  /** Rzeczywisty ruch (kroki i treningi) z ostatnich dni – ustawia ActivityStore. */
+  readonly activityMeasured = signal<MeasuredActivity | null>(null);
 
   /** Zapotrzebowanie „na żywo”: wzór + korekta z Twoich danych. */
   readonly energy = computed(() => {
     const body = this.bodyParams();
     if (!body) return null;
-    const estimate = estimateTdee(body);
+    const estimate = withMeasuredActivity(estimateTdee(body), this.activityMeasured());
     const blended = blendTdee(estimate.tdee, this.measured());
     return { estimate, measured: this.measured(), ...blended };
   });

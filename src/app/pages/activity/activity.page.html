@@ -1,0 +1,108 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ruch</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (!store.loaded()) {
+    <div class="center"><ion-spinner name="crescent" aria-label="Ładowanie" /></div>
+  } @else {
+    <!-- dziś -->
+    <ion-card>
+      <ion-card-content>
+        <div class="today">
+          <button type="button" class="steps" (click)="editSteps()">
+            <span class="slot-icon snack"><ion-icon name="footsteps-outline" aria-hidden="true" /></span>
+            <span class="steps-text">
+              <strong>{{ store.today().steps || '—' }}</strong>
+              <small>kroków dziś · dotknij, żeby wpisać</small>
+            </span>
+          </button>
+          <div class="burn">
+            <strong>+{{ todayKcal() }}</strong>
+            <small>kcal z ruchu</small>
+          </div>
+        </div>
+
+        <div class="week" role="img" [attr.aria-label]="'Kroki w ostatnich 7 dniach'">
+          @for (d of week(); track d.date) {
+            <div class="day" [class.today-col]="d.isToday">
+              <div class="bar"><div class="fill" [style.height.%]="d.ratio * 100"></div></div>
+              <span class="day-label">{{ d.label }}</span>
+            </div>
+          }
+        </div>
+        <p class="meta">
+          @if (avg(); as a) {
+            Średnio {{ a.avgSteps }} kroków dziennie z ostatnich {{ a.days }} dni – z tego licząc
+            {{ a.stepsKcal }} kcal, a z treningów {{ a.trainingKcal }} kcal dziennie. Te wartości trafiają do Twojego zapotrzebowania.
+          } @else {
+            Wpisuj kroki i treningi przez kilka dni – wtedy zapotrzebowanie policzę z Twojego prawdziwego ruchu,
+            a nie ze średniej z profilu.
+          }
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- dodaj trening -->
+    <ion-card>
+      <ion-card-content>
+        <h2 class="section-title">Dodaj trening</h2>
+        <div class="sports">
+          @for (s of sports; track s.key) {
+            <ion-chip outline color="primary" [disabled]="busy()" (click)="addWorkout(s.key)">{{ s.label }}</ion-chip>
+          }
+        </div>
+        <p class="meta">Masz kalorie z zegarka? Wpisz je – będą dokładniejsze niż mój wzór.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- treningi dziś -->
+    @if (store.todayWorkouts().length) {
+      <ion-card>
+        <ion-card-content class="flush">
+          <h2 class="section-title inset">Dzisiejsze treningi</h2>
+          @for (w of store.todayWorkouts(); track w.id) {
+            <ion-item-sliding>
+              <ion-item lines="none">
+                <span class="slot-icon lunch" slot="start"><ion-icon name="barbell-outline" aria-hidden="true" /></span>
+                <ion-label>
+                  <h3>{{ w.sport }}</h3>
+                  <p>{{ w.minutes }} min{{ w.source === 'strava' ? ' · ze Stravy' : '' }}</p>
+                </ion-label>
+                <ion-note slot="end">+{{ w.kcal }} kcal</ion-note>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="remove(w.id)">Usuń</ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- historia -->
+    <ion-card>
+      <ion-card-content class="flush">
+        <h2 class="section-title inset">Ostatnie dni</h2>
+        @for (d of store.byDay().slice().reverse(); track d.date) {
+          <ion-item lines="none">
+            <ion-label>
+              <h3>{{ dayLabel(d.date) }}</h3>
+              <p>{{ d.steps }} kroków</p>
+            </ion-label>
+            <ion-note slot="end">{{ d.workoutKcal ? '+' + d.workoutKcal + ' kcal' : '—' }}</ion-note>
+          </ion-item>
+        } @empty {
+          <ion-item lines="none"><ion-label color="medium"><p>Brak wpisów z ostatnich 4 tygodni.</p></ion-label></ion-item>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <div class="soon ion-padding">
+      <ion-icon name="watch-outline" aria-hidden="true" />
+      <p>Wkrótce: automatyczne treningi z zegarka Huawei przez Stravę.</p>
+    </div>
+  }
+</ion-content>

@@ -11,6 +11,8 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonContent,
+  IonFab,
+  IonFabButton,
   IonHeader,
   IonIcon,
   IonItem,
@@ -30,7 +32,8 @@ import {
   ViewWillEnter,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { add, addCircleOutline, arrowUndoOutline, checkmark, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline } from 'ionicons/icons';
+import { add, addCircleOutline, arrowUndoOutline, checkmark, chevronForwardOutline, footstepsOutline, sparkles, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline } from 'ionicons/icons';
+import { ActivityStore } from '../../core/activity.store';
 import { BodyStore } from '../../core/body.store';
 import { DiaryStore } from '../../core/diary.store';
 import { MealPlanItemRow, MealSlot } from '../../core/database.types';
@@ -49,6 +52,8 @@ import { SLOT_ICONS, TREND_LABELS, signed } from '../../shared/labels';
     IonToolbar,
     IonTitle,
     IonContent,
+    IonFab,
+    IonFabButton,
     IonRefresher,
     IonRefresherContent,
     IonCard,
@@ -73,6 +78,7 @@ import { SLOT_ICONS, TREND_LABELS, signed } from '../../shared/labels';
 export class TodayPage implements ViewWillEnter {
   protected readonly body = inject(BodyStore);
   protected readonly diary = inject(DiaryStore);
+  protected readonly activity = inject(ActivityStore);
   protected readonly plan = inject(PlanStore);
   private readonly recipes = inject(RecipeStore);
   private readonly router = inject(Router);
@@ -136,7 +142,7 @@ export class TodayPage implements ViewWillEnter {
   });
 
   constructor() {
-    addIcons({ add, addCircleOutline, arrowUndoOutline, checkmark, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline });
+    addIcons({ add, addCircleOutline, arrowUndoOutline, checkmark, chevronForwardOutline, footstepsOutline, sparkles, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline });
   }
 
   ionViewWillEnter(): void {
@@ -146,7 +152,7 @@ export class TodayPage implements ViewWillEnter {
   async refresh(event?: RefresherCustomEvent): Promise<void> {
     try {
       const today = todayIso();
-      await Promise.all([this.diary.load(today), this.recipes.load(), this.loadPlanned(today)]);
+      await Promise.all([this.diary.load(today), this.recipes.load(), this.loadPlanned(today), this.activity.load(today)]);
     } catch (e) {
       await this.showToast(errorMessage(e), 'danger');
     } finally {

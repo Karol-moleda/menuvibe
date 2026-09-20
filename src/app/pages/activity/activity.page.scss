@@ -1,0 +1,143 @@
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.today {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.steps {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.steps-text {
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  small {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.burn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  strong {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+
+  small {
+    font-size: 0.72rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.week {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.day {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.bar {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--mv-soft);
+  overflow: hidden;
+
+  .fill {
+    width: 100%;
+    min-height: 3px;
+    border-radius: 8px;
+    background: var(--ion-color-primary);
+  }
+}
+
+.day-label {
+  font-size: 0.7rem;
+  color: var(--ion-color-medium);
+}
+
+.today-col .day-label {
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}
+
+.meta {
+  margin: 14px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ion-color-medium);
+}
+
+.section-title {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ion-color-medium);
+
+  &.inset {
+    padding: 4px 16px 0;
+  }
+}
+
+.flush {
+  padding: 8px 0;
+}
+
+.sports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.soon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ion-color-medium);
+  font-size: 0.82rem;
+
+  p {
+    margin: 0;
+  }
+}

@@ -197,6 +197,24 @@ export type SubstitutionRow = {
   position: number;
 };
 
+export type ActivityKind = 'steps' | 'workout';
+export type ActivitySource = 'manual' | 'strava' | 'health';
+
+export type ActivityEntryRow = {
+  id: string;
+  user_id: string;
+  date: string;
+  kind: ActivityKind;
+  steps: number | null;
+  sport: string | null;
+  minutes: number | null;
+  kcal: number | null;
+  source: ActivitySource;
+  external_id: string | null;
+  note: string | null;
+  created_at: string;
+};
+
 export type AiUsageRow = {
   user_id: string;
   date: string;
@@ -217,9 +235,10 @@ export type Database = {
         | Common
         | 'display_name' | 'sex' | 'birth_date' | 'height_cm' | 'activity_pal' | 'goal'
         | 'weekly_rate_pct' | 'protein_g_per_kg' | 'fat_pct' | 'slot_split' | 'water_goal_ml'
-        | 'recalc_day' | Ts | 'updated_at'
+        | 'recalc_day' | 'body_fat_pct' | 'job_pal' | 'daily_steps' | 'training_days'
+        | 'training_minutes' | 'training_met' | 'recalc_weekday' | Ts | 'updated_at'
       >;
-      calorie_targets: Table<CalorieTargetRow, 'id' | Common | 'bmr' | 'tdee' | 'weight_kg' | 'note' | Ts>;
+      calorie_targets: Table<CalorieTargetRow, 'id' | Common | 'bmr' | 'tdee' | 'weight_kg' | 'note' | 'measured_tdee' | 'confidence' | Ts>;
       weight_entries: Table<WeightEntryRow, 'id' | Common | Ts>;
       recipes: Table<
         RecipeRow,
@@ -241,6 +260,10 @@ export type Database = {
       shopping_lists: Table<ShoppingListRow, 'id' | Common | 'items' | Ts | 'updated_at'>;
       chat_messages: Table<ChatMessageRow, 'id' | Common | 'recipe' | Ts>;
       substitutions: Table<SubstitutionRow, 'id' | Common | 'section' | 'note' | 'items' | 'position'>;
+      activity_entries: Table<
+        ActivityEntryRow,
+        'id' | Common | 'steps' | 'sport' | 'minutes' | 'kcal' | 'source' | 'external_id' | 'note' | Ts
+      >;
       ai_usage: Table<AiUsageRow, Common | 'requests' | 'input_tokens' | 'output_tokens'>;
     };
     Views: { [_ in never]: never };
@@ -253,6 +276,8 @@ export type Database = {
       recipe_origin: RecipeOrigin;
       target_method: TargetMethod;
       chat_role: ChatRole;
+      activity_kind: ActivityKind;
+      activity_source: ActivitySource;
     };
     CompositeTypes: { [_ in never]: never };
   };

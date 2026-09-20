@@ -9,6 +9,8 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonContent,
+  IonFab,
+  IonFabButton,
   IonHeader,
   IonIcon,
   IonItem,
@@ -24,7 +26,7 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronBackOutline, chevronForwardOutline, lockClosed, moonOutline, nutritionOutline, restaurantOutline, shuffleOutline, sunnyOutline } from 'ionicons/icons';
+import { chevronBackOutline, chevronForwardOutline, lockClosed, moonOutline, nutritionOutline, restaurantOutline, shuffleOutline, sparkles, sunnyOutline } from 'ionicons/icons';
 import { BodyStore } from '../../core/body.store';
 import { MealPlanItemRow } from '../../core/database.types';
 import { addDays } from '../../core/nutrition';
@@ -46,6 +48,8 @@ const DAY_NAMES = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', '
     IonButton,
     IonIcon,
     IonContent,
+    IonFab,
+    IonFabButton,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -128,7 +132,7 @@ export class WeekPage {
   });
 
   constructor() {
-    addIcons({ chevronBackOutline, chevronForwardOutline, lockClosed, shuffleOutline, sunnyOutline, nutritionOutline, restaurantOutline, moonOutline });
+    addIcons({ chevronBackOutline, chevronForwardOutline, lockClosed, shuffleOutline, sparkles, sunnyOutline, nutritionOutline, restaurantOutline, moonOutline });
     void this.init();
   }
 

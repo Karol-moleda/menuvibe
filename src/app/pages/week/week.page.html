@@ -88,6 +88,12 @@
     </ion-text>
   }
 
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button routerLink="/czat" aria-label="Czat z Claude">
+      <ion-icon name="sparkles" />
+    </ion-fab-button>
+  </ion-fab>
+
   <!-- wybór zamiennika -->
   <ion-modal [isOpen]="swapping() !== null" (didDismiss)="swapping.set(null)">
     <ng-template>

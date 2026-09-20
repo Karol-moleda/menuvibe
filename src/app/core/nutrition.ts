@@ -61,6 +61,22 @@ export interface BodyParams {
   bodyFatPct?: number | null;
 }
 
+export interface DayActivity {
+  date: string;
+  /** kroki z zegarka albo wpisane ręcznie */
+  steps: number;
+  /** energia treningów netto w kcal */
+  workoutKcal: number;
+}
+
+export interface MeasuredActivity {
+  stepsKcal: number;
+  trainingKcal: number;
+  /** liczba dni z danymi w oknie */
+  days: number;
+  avgSteps: number;
+}
+
 export interface EnergyEstimate {
   bmr: number;
   /** energia trybu dnia: BMR × PAL pracy */
@@ -70,6 +86,8 @@ export interface EnergyEstimate {
   tdee: number;
   /** wynikowy PAL = TDEE / BMR */
   pal: number;
+  /** skąd wzięliśmy kroki i treningi */
+  source: 'declared' | 'measured';
 }
 export interface TargetSettings {
   goal: Goal;
@@ -182,7 +200,41 @@ export function estimateTdee(p: BodyParams): EnergyEstimate {
   const steps = stepsKcal(p.activity.dailySteps, p.weightKg);
   const training = trainingKcal(p.activity, p.weightKg);
   const total = base + steps + training;
-  return { bmr: b, baseKcal: base, stepsKcal: steps, trainingKcal: training, tdee: total, pal: Math.round((total / b) * 100) / 100 };
+  return { bmr: b, baseKcal: base, stepsKcal: steps, trainingKcal: training, tdee: total, pal: Math.round((total / b) * 100) / 100, source: 'declared' };
+}
+
+/**
+ * Średni ruch z ostatnich dni (kroki + treningi) zamiast deklaracji z profilu.
+ * Dni bez wpisu liczą się jako dni bez treningu – inaczej średnia byłaby zawyżona.
+ */
+export function averageActivity(days: readonly DayActivity[], weightKg: number, endIso: string, window = 14, minDays = 5): MeasuredActivity | null {
+  const start = addDays(endIso, -(window - 1));
+  const inWindow = days.filter((d) => d.date >= start && d.date <= endIso);
+  if (inWindow.length < minDays) return null;
+  const span = Math.max(inWindow.length, Math.min(window, daysBetween(inWindow[0].date, endIso) + 1));
+  const stepsSum = inWindow.reduce((s, d) => s + stepsKcal(d.steps, weightKg), 0);
+  const workoutSum = inWindow.reduce((s, d) => s + d.workoutKcal, 0);
+  const stepsAvg = inWindow.reduce((s, d) => s + d.steps, 0) / inWindow.length;
+  return {
+    stepsKcal: Math.round(stepsSum / span),
+    trainingKcal: Math.round(workoutSum / span),
+    days: inWindow.length,
+    avgSteps: Math.round(stepsAvg),
+  };
+}
+
+/** Podmienia szacowany ruch na zmierzony (z zegarka lub wpisów). */
+export function withMeasuredActivity(estimate: EnergyEstimate, activity: MeasuredActivity | null): EnergyEstimate {
+  if (!activity) return estimate;
+  const total = estimate.baseKcal + activity.stepsKcal + activity.trainingKcal;
+  return {
+    ...estimate,
+    stepsKcal: activity.stepsKcal,
+    trainingKcal: activity.trainingKcal,
+    tdee: total,
+    pal: Math.round((total / estimate.bmr) * 100) / 100,
+    source: 'measured',
+  };
 }
 
 export function tdee(p: BodyParams): number {

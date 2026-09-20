@@ -9,7 +9,7 @@ Stack: Angular 22 + Ionic 9 + Capacitor 8, backend Supabase (Postgres, Auth, Edg
 | Ścieżka | Zawartość |
 | --- | --- |
 | `src/app/core` | Klient Supabase, logowanie, typy bazy |
-| `src/app/pages` | Ekrany (zakładki: Dziś, Tydzień, Przepisy, Czat, Profil) |
+| `src/app/pages` | Ekrany (zakładki: Dziś, Tydzień, Przepisy, Ruch, Profil; czat pod przyciskiem ✦) |
 | `supabase/migrations` | Schemat bazy z RLS |
 | `supabase/functions` | Edge Functions (czat z Claude – etap 5) |
 | `data/recipes.json` | 248 przepisów wyciągniętych z PDF-ów dietetyczek |
@@ -94,6 +94,8 @@ i `AI_DAILY_LIMIT=40` (dzienny limit pytań). Testy logiki funkcji: `deno test s
   najwyżej 0,8) i nigdy nie odchyla się o więcej niż 25% od wzoru.
 - **Cel:** zapotrzebowanie + korekta z tempa (% masy ciała na tydzień × 7700 / 7). Deficyt najwyżej 25%
   zapotrzebowania, cel nigdy poniżej BMR ani poniżej 1500 kcal (mężczyźni) / 1200 kcal (kobiety).
+- **Ruch:** kroki i treningi z zakładki Ruch zastępują deklarację z profilu, gdy jest co najmniej
+  5 dni z wpisami w ostatnich 14. Trening z zegarka (kcal) ma pierwszeństwo przed wzorem z METów.
 - **Przeliczanie:** raz w tygodniu, w wybrany dzień, zmiana najwyżej o 100 kcal i 10% naraz.
 
 Źródła: Frankenfield i in. 2005 (dokładność wzorów BMR), FAO/WHO/UNU 2001 (PAL),

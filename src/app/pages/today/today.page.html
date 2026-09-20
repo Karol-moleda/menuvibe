@@ -166,6 +166,27 @@
       </div>
     </ion-card>
 
+    <!-- ruch -->
+    <ion-card routerLink="/ruch" button>
+      <header class="meal-head">
+        <span class="slot-icon snack"><ion-icon name="footsteps-outline" aria-hidden="true" /></span>
+        <span class="meal-title">
+          <strong>Ruch</strong>
+          <small>
+            @if (activity.today().steps) {
+              {{ activity.today().steps }} kroków
+            } @else {
+              dotknij, żeby wpisać kroki
+            }
+            @if (activity.today().workoutKcal) {
+              · trening +{{ activity.today().workoutKcal }} kcal
+            }
+          </small>
+        </span>
+        <ion-icon name="chevron-forward-outline" color="medium" aria-hidden="true" />
+      </header>
+    </ion-card>
+
     <!-- redukcja -->
     @let trend = body.trend();
     <ion-card routerLink="/profil" button>
@@ -186,4 +207,10 @@
       </ion-card-content>
     </ion-card>
   }
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button routerLink="/czat" aria-label="Czat z Claude">
+      <ion-icon name="sparkles" />
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
