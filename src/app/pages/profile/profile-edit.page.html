@@ -1,0 +1,112 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profil" text="" />
+    </ion-buttons>
+    <ion-title>Twoje dane</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <ion-list>
+      <ion-list-header><ion-label>Ciało</ion-label></ion-list-header>
+
+      <ion-item lines="none">
+        <ion-segment formControlName="sex" aria-label="Płeć">
+          <ion-segment-button value="male"><ion-label>Mężczyzna</ion-label></ion-segment-button>
+          <ion-segment-button value="female"><ion-label>Kobieta</ion-label></ion-segment-button>
+        </ion-segment>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Data urodzenia"
+          labelPlacement="stacked"
+          type="date"
+          [max]="maxBirthDate"
+          formControlName="birth_date"
+          errorText="Podaj datę urodzenia"
+        />
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Wzrost (cm)"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          formControlName="height_cm"
+          errorText="Wzrost między 100 a 250 cm"
+        />
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="Aktywność"
+          labelPlacement="stacked"
+          interface="action-sheet"
+          formControlName="activity_pal"
+          placeholder="Wybierz"
+          cancelText="Anuluj"
+        >
+          @for (a of activityLevels; track a.pal) {
+            <ion-select-option [value]="a.pal">{{ a.label }} – {{ a.hint }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </ion-list>
+
+    <ion-list>
+      <ion-list-header><ion-label>Cel</ion-label></ion-list-header>
+
+      <ion-item lines="none">
+        <ion-segment formControlName="goal" aria-label="Cel">
+          <ion-segment-button value="cut"><ion-label>Redukcja</ion-label></ion-segment-button>
+          <ion-segment-button value="maintain"><ion-label>Utrzymanie</ion-label></ion-segment-button>
+          <ion-segment-button value="gain"><ion-label>Masa</ion-label></ion-segment-button>
+        </ion-segment>
+      </ion-item>
+
+      @if (form.controls.goal.value !== 'maintain') {
+        <ion-item>
+          <ion-select label="Tempo (% masy na tydzień)" labelPlacement="stacked" formControlName="weekly_rate_pct" interface="popover">
+            @for (r of rates; track r) {
+              <ion-select-option [value]="r">{{ formatPct(r) }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-note class="ion-padding-horizontal">Dietetyczka zaleca 0,5–1% masy ciała na tydzień.</ion-note>
+      }
+    </ion-list>
+
+    <ion-list>
+      <ion-list-header><ion-label>Makro i nawyki</ion-label></ion-list-header>
+      <ion-item>
+        <ion-input label="Białko (g na kg masy)" labelPlacement="stacked" type="number" inputmode="decimal" step="0.1" formControlName="protein_g_per_kg" />
+      </ion-item>
+      <ion-item>
+        <ion-input label="Tłuszcz (% kalorii)" labelPlacement="stacked" type="number" inputmode="numeric" formControlName="fat_pct" />
+      </ion-item>
+      <ion-item>
+        <ion-input label="Woda dziennie (ml)" labelPlacement="stacked" type="number" inputmode="numeric" step="250" formControlName="water_goal_ml" />
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Dzień miesiąca przeliczania kalorii"
+          labelPlacement="stacked"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          max="28"
+          formControlName="recalc_day"
+          helperText="Tego dnia co miesiąc aplikacja przeliczy Twój cel"
+        />
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding">
+      <ion-button type="submit" expand="block" [disabled]="saving()">Zapisz</ion-button>
+    </div>
+  </form>
+</ion-content>

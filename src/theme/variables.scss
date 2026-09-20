@@ -11,3 +11,9 @@
   --mv-carbs: #e0a526;
   --mv-fat: #d9644a;
 }
+
+// przyciski segmentów bez WIELKICH LITER, żeby polskie etykiety się mieściły
+ion-segment-button {
+  text-transform: none;
+  letter-spacing: 0;
+}

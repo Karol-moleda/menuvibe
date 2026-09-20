@@ -1,0 +1,83 @@
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.kcal {
+  font-size: 2.25rem;
+  font-weight: 700;
+
+  small {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--ion-color-medium);
+  }
+}
+
+.weight-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+
+  small {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--ion-color-medium);
+  }
+}
+
+.muted {
+  color: var(--ion-color-medium);
+}
+
+.macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+}
+
+.macro {
+  padding-left: 10px;
+  border-left: 4px solid;
+
+  &.protein { border-color: var(--mv-protein); }
+  &.carbs { border-color: var(--mv-carbs); }
+  &.fat { border-color: var(--mv-fat); }
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin: 4px 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.trend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weight-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+
+  ion-input {
+    flex: 1;
+  }
+}
+
+.hint {
+  font-size: 0.8rem;
+  padding: 0 16px 12px;
+  margin: 0;
+}

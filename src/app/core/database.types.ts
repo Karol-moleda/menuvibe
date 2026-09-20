@@ -20,7 +20,7 @@ type Table<Row, Defaults extends keyof Row> = {
   Relationships: [];
 };
 
-export interface ProfileRow {
+export type ProfileRow = {
   user_id: string;
   display_name: string | null;
   sex: Sex | null;
@@ -36,9 +36,9 @@ export interface ProfileRow {
   recalc_day: number;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface CalorieTargetRow {
+export type CalorieTargetRow = {
   id: string;
   user_id: string;
   valid_from: string;
@@ -52,17 +52,17 @@ export interface CalorieTargetRow {
   weight_kg: number | null;
   note: string | null;
   created_at: string;
-}
+};
 
-export interface WeightEntryRow {
+export type WeightEntryRow = {
   id: string;
   user_id: string;
   date: string;
   weight_kg: number;
   created_at: string;
-}
+};
 
-export interface RecipeRow {
+export type RecipeRow = {
   id: string;
   user_id: string;
   slug: string;
@@ -83,9 +83,9 @@ export interface RecipeRow {
   archived: boolean;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface RecipeIngredientRow {
+export type RecipeIngredientRow = {
   id: string;
   recipe_id: string;
   user_id: string;
@@ -96,17 +96,17 @@ export interface RecipeIngredientRow {
   household: string | null;
   category: string;
   grp: string | null;
-}
+};
 
-export interface MealPlanRow {
+export type MealPlanRow = {
   id: string;
   user_id: string;
   week_start: string;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface MealPlanItemRow {
+export type MealPlanItemRow = {
   id: string;
   plan_id: string;
   user_id: string;
@@ -115,9 +115,9 @@ export interface MealPlanItemRow {
   recipe_id: string;
   portion_factor: number;
   locked: boolean;
-}
+};
 
-export interface ProductRow {
+export type ProductRow = {
   id: string;
   user_id: string;
   ean: string | null;
@@ -132,9 +132,9 @@ export interface ProductRow {
   favorite: boolean;
   last_used_at: string | null;
   created_at: string;
-}
+};
 
-export interface DiaryEntryRow {
+export type DiaryEntryRow = {
   id: string;
   user_id: string;
   date: string;
@@ -150,17 +150,17 @@ export interface DiaryEntryRow {
   carbs_g: number;
   fat_g: number;
   created_at: string;
-}
+};
 
-export interface WaterEntryRow {
+export type WaterEntryRow = {
   id: string;
   user_id: string;
   date: string;
   ml: number;
   created_at: string;
-}
+};
 
-export interface ShoppingListRow {
+export type ShoppingListRow = {
   id: string;
   user_id: string;
   date_from: string;
@@ -168,38 +168,39 @@ export interface ShoppingListRow {
   items: Json;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface ChatMessageRow {
+export type ChatMessageRow = {
   id: string;
   user_id: string;
   role: ChatRole;
   content: string;
   recipe: Json | null;
   created_at: string;
-}
+};
 
-export interface SubstitutionRow {
+export type SubstitutionRow = {
   id: string;
   user_id: string;
   section: string | null;
   note: string | null;
   items: Json;
   position: number;
-}
+};
 
-export interface AiUsageRow {
+export type AiUsageRow = {
   user_id: string;
   date: string;
   requests: number;
   input_tokens: number;
   output_tokens: number;
-}
+};
 
 type Common = 'user_id';
 type Ts = 'created_at';
 
-export interface Database {
+export type Database = {
+  __InternalSupabase: { PostgrestVersion: '13' };
   public: {
     Tables: {
       profiles: Table<
@@ -233,8 +234,8 @@ export interface Database {
       substitutions: Table<SubstitutionRow, 'id' | Common | 'section' | 'note' | 'items' | 'position'>;
       ai_usage: Table<AiUsageRow, Common | 'requests' | 'input_tokens' | 'output_tokens'>;
     };
-    Views: Record<never, never>;
-    Functions: Record<never, never>;
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
     Enums: {
       meal_slot: MealSlot;
       sex: Sex;
@@ -244,6 +245,6 @@ export interface Database {
       target_method: TargetMethod;
       chat_role: ChatRole;
     };
-    CompositeTypes: Record<never, never>;
+    CompositeTypes: { [_ in never]: never };
   };
-}
+};

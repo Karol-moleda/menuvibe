@@ -11,6 +11,7 @@ export const tabsRoutes: Routes = [
       { path: 'przepisy', loadComponent: () => import('../recipes/recipes.page').then((m) => m.RecipesPage) },
       { path: 'czat', loadComponent: () => import('../chat/chat.page').then((m) => m.ChatPage) },
       { path: 'profil', loadComponent: () => import('../profile/profile.page').then((m) => m.ProfilePage) },
+      { path: 'profil/dane', loadComponent: () => import('../profile/profile-edit.page').then((m) => m.ProfileEditPage) },
       { path: '', pathMatch: 'full', redirectTo: 'dzis' },
     ],
   },

@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Profil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="reload($event)">
+    <ion-refresher-content />
+  </ion-refresher>
+
+  @if (!store.loaded()) {
+    <div class="center"><ion-spinner name="crescent" aria-label="Ładowanie" /></div>
+  } @else {
+    @if (!store.profileComplete()) {
+      <ion-card color="light" class="setup">
+        <ion-card-header>
+          <ion-card-title>Uzupełnij profil</ion-card-title>
+          <ion-card-subtitle>Brakuje: {{ store.missingFields().join(', ') }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <p>Na tej podstawie policzę Twoje dzienne zapotrzebowanie i będę je aktualizować co miesiąc.</p>
+          <ion-button routerLink="/profil/dane" expand="block">Uzupełnij dane</ion-button>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Cel -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Twój dzienny cel</ion-card-subtitle>
+        @if (store.currentTarget(); as t) {
+          <ion-card-title class="kcal">{{ t.kcal }} <small>kcal</small></ion-card-title>
+        } @else {
+          <ion-card-title class="kcal muted">—</ion-card-title>
+        }
+      </ion-card-header>
+      <ion-card-content>
+        @if (store.currentTarget(); as t) {
+          <div class="macros">
+            <span class="macro protein"><strong>{{ t.protein_g }} g</strong> białko</span>
+            <span class="macro carbs"><strong>{{ t.carbs_g }} g</strong> węglowodany</span>
+            <span class="macro fat"><strong>{{ t.fat_g }} g</strong> tłuszcz</span>
+          </div>
+          <p class="meta">
+            Cel {{ methodLabels[t.method] }}, od {{ formatDate(t.valid_from) }}.
+            @if (t.method === 'manual') {
+              Automatyczne przeliczanie jest wstrzymane.
+            } @else if (store.nextRecalc(); as next) {
+              Następne przeliczenie: {{ formatDate(next) }}.
+            }
+          </p>
+          @if (t.note) {
+            <p class="meta">{{ t.note }}</p>
+          }
+        } @else {
+          <p class="meta">Cel pojawi się po uzupełnieniu danych i pierwszym ważeniu.</p>
+        }
+        <div class="actions">
+          <ion-button fill="outline" size="small" [disabled]="!store.profileComplete() || busy()" (click)="recalculate()">
+            {{ store.currentTarget()?.method === 'manual' ? 'Wróć do automatycznego' : 'Przelicz teraz' }}
+          </ion-button>
+          <ion-button fill="clear" size="small" [disabled]="busy()" (click)="setManualTarget()">Cel od dietetyczki</ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Waga -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Waga</ion-card-subtitle>
+        <ion-card-title class="weight-title">
+          @if (store.trend().average; as avg) {
+            {{ avg | number: '1.1-1' }} <small>kg średnio (7 dni)</small>
+          } @else {
+            <span class="muted">brak pomiarów</span>
+          }
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @let trend = store.trend();
+        @let status = trendLabels[trend.status];
+        <div class="trend">
+          <ion-badge [color]="status.color">{{ status.label }}</ion-badge>
+          @if (trend.weeklyChangeKg !== null) {
+            <span>{{ signed(trend.weeklyChangeKg, 2) }} kg / tydz. ({{ signed(trend.weeklyChangePct!, 2) }}%)</span>
+          }
+        </div>
+        <p class="meta">{{ status.hint }}</p>
+
+        <form class="weight-form" (submit)="$event.preventDefault(); saveWeight()">
+          <ion-input
+            label="Dzisiejsza waga (kg)"
+            labelPlacement="stacked"
+            fill="outline"
+            inputmode="decimal"
+            placeholder="np. 88,4"
+            [value]="weightInput()"
+            (ionInput)="weightInput.set($event.detail.value ?? '')"
+          />
+          <ion-button type="submit" [disabled]="busy() || !weightInput()">Zapisz</ion-button>
+        </form>
+      </ion-card-content>
+
+      @if (recentWeights().length) {
+        <ion-list lines="inset">
+          <ion-list-header><ion-label>Ostatnie pomiary</ion-label></ion-list-header>
+          @for (w of recentWeights(); track w.id) {
+            <ion-item-sliding>
+              <ion-item>
+                <ion-label>{{ formatDate(w.date) }}</ion-label>
+                <ion-note slot="end">{{ w.weight_kg | number: '1.1-1' }} kg</ion-note>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="deleteWeight(w.id)">Usuń</ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+        </ion-list>
+        <ion-text color="medium"><p class="hint">Przesuń pomiar w lewo, żeby go usunąć.</p></ion-text>
+      }
+    </ion-card>
+
+    <!-- Dane -->
+    @if (summary(); as s) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Twoje dane</ion-card-subtitle>
+        </ion-card-header>
+        <ion-list lines="none">
+          <ion-item><ion-label>Płeć</ion-label><ion-note slot="end">{{ s.sex }}</ion-note></ion-item>
+          <ion-item><ion-label>Wiek</ion-label><ion-note slot="end">{{ s.age }}</ion-note></ion-item>
+          <ion-item><ion-label>Wzrost</ion-label><ion-note slot="end">{{ s.height }}</ion-note></ion-item>
+          <ion-item><ion-label>Aktywność</ion-label><ion-note slot="end">{{ s.activity }}</ion-note></ion-item>
+          <ion-item><ion-label>Cel</ion-label><ion-note slot="end">{{ s.goal }}</ion-note></ion-item>
+        </ion-list>
+        <ion-card-content>
+          <ion-button routerLink="/profil/dane" fill="outline" expand="block">Edytuj dane</ion-button>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Historia celów -->
+    @if (recentTargets().length > 1) {
+      <ion-card>
+        <ion-card-header><ion-card-subtitle>Historia celu</ion-card-subtitle></ion-card-header>
+        <ion-list lines="inset">
+          @for (t of recentTargets(); track t.id) {
+            <ion-item>
+              <ion-label>
+                <h3>{{ t.kcal }} kcal</h3>
+                <p>od {{ formatDate(t.valid_from) }} · {{ methodLabels[t.method] }}</p>
+              </ion-label>
+              @if (t.weight_kg) {
+                <ion-note slot="end">{{ t.weight_kg | number: '1.1-1' }} kg</ion-note>
+              }
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card>
+    }
+
+    <div class="ion-padding">
+      <p class="meta">Zalogowany jako {{ auth.user()?.email }}</p>
+      <ion-button expand="block" fill="outline" color="danger" (click)="logout()">Wyloguj</ion-button>
+    </div>
+  }
+</ion-content>
