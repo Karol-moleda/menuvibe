@@ -1,4 +1,4 @@
-import { Goal, TargetMethod } from '../core/database.types';
+import { Goal, MealSlot, TargetMethod } from '../core/database.types';
 import { TrendStatus } from '../core/nutrition';
 
 export const GOAL_LABELS: Record<Goal, string> = {
@@ -30,3 +30,11 @@ export function signed(v: number, digits = 1): string {
   const s = v.toFixed(digits).replace('.', ',');
   return v > 0 ? `+${s}` : s;
 }
+
+/** Ikonki posiłków (ionicons) – spójne na wszystkich ekranach. */
+export const SLOT_ICONS: Record<MealSlot, string> = {
+  breakfast: 'sunny-outline',
+  snack: 'nutrition-outline',
+  lunch: 'restaurant-outline',
+  dinner: 'moon-outline',
+};

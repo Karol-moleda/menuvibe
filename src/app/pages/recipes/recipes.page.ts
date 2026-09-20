@@ -18,8 +18,9 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { heart, sparkles } from 'ionicons/icons';
+import { heart, moonOutline, nutritionOutline, restaurantOutline, sparkles, sunnyOutline } from 'ionicons/icons';
 import { MealSlot } from '../../core/database.types';
+import { SLOT_ICONS } from '../../shared/labels';
 import { RecipeStore } from '../../core/recipe.store';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
 
@@ -72,6 +73,9 @@ import { SLOTS, SLOT_LABELS } from '../../core/planner';
         <ion-list>
           @for (r of filtered(); track r.id) {
             <ion-item [routerLink]="['/przepisy', r.id]" [queryParams]="linkParams()" detail [class.disliked]="r.rating < 0">
+              <span class="slot-icon" [class]="r.slot" slot="start">
+                <ion-icon [name]="slotIcons[r.slot]" aria-hidden="true" />
+              </span>
               <ion-label>
                 <h3>
                   @if (r.rating > 0) {
@@ -111,6 +115,7 @@ export class RecipesPage {
 
   protected readonly slots = SLOTS;
   protected readonly slotLabels = SLOT_LABELS;
+  protected readonly slotIcons = SLOT_ICONS;
   protected readonly round = Math.round;
 
   private readonly params = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
@@ -136,7 +141,7 @@ export class RecipesPage {
   });
 
   constructor() {
-    addIcons({ heart, sparkles });
+    addIcons({ heart, sparkles, sunnyOutline, nutritionOutline, restaurantOutline, moonOutline });
     void this.store.load();
   }
 }

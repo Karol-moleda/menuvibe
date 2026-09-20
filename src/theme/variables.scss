@@ -212,3 +212,30 @@ ion-toast {
     color: var(--ion-color-medium);
   }
 }
+
+// kolorowe ikonki posiłków (Dziś, Tydzień, Przepisy)
+.slot-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--mv-soft);
+  color: var(--ion-text-color);
+  font-size: 1.15rem;
+
+  &.breakfast { background: rgba(226, 155, 18, 0.16); color: #b97a06; }
+  &.snack { background: rgba(21, 128, 61, 0.14); color: var(--ion-color-primary); }
+  &.lunch { background: rgba(47, 126, 216, 0.16); color: #2f7ed8; }
+  &.dinner { background: rgba(99, 102, 241, 0.16); color: #5b5ee0; }
+  &.water { background: rgba(56, 160, 214, 0.16); color: #2b90c6; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .slot-icon {
+    &.breakfast { color: #f0b545; }
+    &.lunch { color: #6aa8f0; }
+    &.dinner { color: #a5a7f5; }
+    &.water { color: #6ec1ea; }
+  }
+}

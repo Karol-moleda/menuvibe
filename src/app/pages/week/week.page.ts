@@ -24,11 +24,12 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronBackOutline, chevronForwardOutline, lockClosed, shuffleOutline } from 'ionicons/icons';
+import { chevronBackOutline, chevronForwardOutline, lockClosed, moonOutline, nutritionOutline, restaurantOutline, shuffleOutline, sunnyOutline } from 'ionicons/icons';
 import { BodyStore } from '../../core/body.store';
 import { MealPlanItemRow } from '../../core/database.types';
 import { addDays } from '../../core/nutrition';
 import { PlanStore } from '../../core/plan.store';
+import { SLOT_ICONS } from '../../shared/labels';
 import { SLOTS, SLOT_LABELS, alternatives, factorFor, mondayOf, weekDates } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
 
@@ -71,6 +72,7 @@ export class WeekPage {
 
   protected readonly slots = SLOTS;
   protected readonly slotLabels = SLOT_LABELS;
+  protected readonly slotIcons = SLOT_ICONS;
   protected readonly busy = signal(false);
 
   /** komórka, dla której wybieramy zamiennik */
@@ -126,7 +128,7 @@ export class WeekPage {
   });
 
   constructor() {
-    addIcons({ chevronBackOutline, chevronForwardOutline, lockClosed, shuffleOutline });
+    addIcons({ chevronBackOutline, chevronForwardOutline, lockClosed, shuffleOutline, sunnyOutline, nutritionOutline, restaurantOutline, moonOutline });
     void this.init();
   }
 

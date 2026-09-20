@@ -71,73 +71,99 @@
     <!-- posiłki -->
     @for (meal of meals(); track meal.slot) {
       <ion-card class="meal">
-        <ion-card-header class="meal-head">
-          <ion-card-subtitle>{{ slotLabels[meal.slot] }}</ion-card-subtitle>
-          <span class="meal-kcal">{{ meal.kcal }} kcal</span>
-          <ion-button fill="clear" size="small" (click)="addTo(meal.slot)" [attr.aria-label]="'Dodaj do: ' + slotLabels[meal.slot]">
-            <ion-icon slot="icon-only" name="add-circle-outline" />
+        <header class="meal-head">
+          <span class="slot-icon" [class]="meal.slot">
+            <ion-icon [name]="slotIcons[meal.slot]" aria-hidden="true" />
+          </span>
+          <span class="meal-title">
+            <strong>{{ slotLabels[meal.slot] }}</strong>
+            <small>
+              {{ meal.kcal }}
+              @if (meal.targetKcal) {
+                z {{ meal.targetKcal }}
+              }
+              kcal
+            </small>
+          </span>
+          <ion-button fill="clear" shape="round" (click)="addTo(meal.slot)" [attr.aria-label]="'Dodaj do: ' + slotLabels[meal.slot]">
+            <ion-icon slot="icon-only" name="add" />
           </ion-button>
-        </ion-card-header>
+        </header>
 
-        <ion-list lines="inset">
-          @if (meal.planned; as pl) {
-            <ion-item class="planned">
-              <ion-icon slot="start" name="ellipse-outline" color="medium" aria-hidden="true" />
-              <ion-label class="ion-text-wrap" (click)="openPlanned(pl.item)">
-                <p>Z planu</p>
-                <h3>{{ pl.recipe.name }}</h3>
+        @if (meal.planned; as pl) {
+          <div class="planned">
+            <button type="button" class="planned-main" (click)="openPlanned(pl.item)">
+              <span class="tag">Plan</span>
+              <span class="planned-name">{{ pl.recipe.name }}</span>
+              <span class="planned-kcal">{{ pl.kcal }} kcal</span>
+            </button>
+            <ion-button size="small" [disabled]="busy()" (click)="eatPlanned(pl)">
+              <ion-icon slot="start" name="checkmark" />
+              Zjadłem
+            </ion-button>
+          </div>
+        }
+
+        @for (e of meal.entries; track e.id) {
+          <ion-item-sliding>
+            <ion-item lines="none" class="entry">
+              <ion-icon slot="start" name="checkmark-circle" color="success" aria-hidden="true" />
+              <ion-label class="ion-text-wrap">
+                <h3>{{ e.name }}</h3>
+                <p>
+                  B {{ round(e.protein_g) }} · W {{ round(e.carbs_g) }} · T {{ round(e.fat_g) }}
+                  @if (e.servings && e.servings !== 1) {
+                    · {{ e.servings | number: '1.0-2' }} porcji
+                  }
+                  @if (e.grams) {
+                    · {{ e.grams | number: '1.0-0' }} g
+                  }
+                </p>
               </ion-label>
-              <ion-button slot="end" size="small" [disabled]="busy()" (click)="eatPlanned(pl)">Zjedzone · {{ pl.kcal }}</ion-button>
+              <ion-note slot="end">{{ e.kcal }} kcal</ion-note>
             </ion-item>
-          }
-          @for (e of meal.entries; track e.id) {
-            <ion-item-sliding>
-              <ion-item>
-                <ion-icon slot="start" name="checkmark-circle" color="success" aria-hidden="true" />
-                <ion-label class="ion-text-wrap">
-                  <h3>{{ e.name }}</h3>
-                  <p>
-                    B {{ round(e.protein_g) }} · W {{ round(e.carbs_g) }} · T {{ round(e.fat_g) }}
-                    @if (e.servings && e.servings !== 1) {
-                      · {{ e.servings | number: '1.0-2' }} porcji
-                    }
-                    @if (e.grams) {
-                      · {{ e.grams | number: '1.0-0' }} g
-                    }
-                  </p>
-                </ion-label>
-                <ion-note slot="end">{{ e.kcal }} kcal</ion-note>
-              </ion-item>
-              <ion-item-options side="end">
-                <ion-item-option color="danger" (click)="remove(e.id)">Usuń</ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
-          }
-          @if (!meal.planned && !meal.entries.length) {
-            <ion-item lines="none"><ion-label color="medium"><p>Nic jeszcze nie dodano.</p></ion-label></ion-item>
-          }
-        </ion-list>
+            <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="remove(e.id)">Usuń</ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        }
+
+        @if (!meal.planned && !meal.entries.length) {
+          <button type="button" class="empty-slot" (click)="addTo(meal.slot)">
+            <ion-icon name="add-circle-outline" aria-hidden="true" />
+            Dodaj {{ slotLabels[meal.slot].toLowerCase() }}
+          </button>
+        }
       </ion-card>
     }
 
     <!-- woda -->
     <ion-card>
-      <ion-card-header class="meal-head">
-        <ion-card-subtitle>Woda</ion-card-subtitle>
-        <span class="meal-kcal">{{ diary.waterMl() / 1000 | number: '1.1-2' }} / {{ waterGoal() / 1000 | number: '1.1-1' }} l</span>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-progress-bar [value]="diary.waterMl() / waterGoal()" color="tertiary" aria-label="Postęp wody" />
-        <div class="water-actions">
-          <ion-button size="small" fill="outline" [disabled]="busy()" (click)="addWater(250)">
-            <ion-icon slot="start" name="water-outline" />+250 ml
-          </ion-button>
-          <ion-button size="small" fill="outline" [disabled]="busy()" (click)="addWater(500)">
-            <ion-icon slot="start" name="water-outline" />+500 ml
-          </ion-button>
-          <ion-button size="small" fill="clear" [disabled]="busy() || !diary.water().length" (click)="undoWater()">Cofnij</ion-button>
-        </div>
-      </ion-card-content>
+      <header class="meal-head">
+        <span class="slot-icon water"><ion-icon name="water" aria-hidden="true" /></span>
+        <span class="meal-title">
+          <strong>Woda</strong>
+          <small>{{ diary.waterMl() / 1000 | number: '1.1-2' }} z {{ waterGoal() / 1000 | number: '1.1-1' }} l</small>
+        </span>
+        <ion-button fill="clear" shape="round" [disabled]="busy() || !diary.water().length" (click)="undoWater()" aria-label="Cofnij ostatnią szklankę">
+          <ion-icon slot="icon-only" name="arrow-undo-outline" />
+        </ion-button>
+      </header>
+      <div class="glasses" role="group" aria-label="Szklanki wody">
+        @for (g of glasses(); track $index) {
+          <button
+            type="button"
+            class="glass"
+            [class.full]="g"
+            [disabled]="busy()"
+            (click)="addWater(250)"
+            [attr.aria-label]="g ? 'Wypita szklanka 250 ml' : 'Dodaj szklankę 250 ml'"
+          >
+            <ion-icon [name]="g ? 'water' : 'water-outline'" aria-hidden="true" />
+          </button>
+        }
+        <ion-button class="half-litre" fill="clear" size="small" [disabled]="busy()" (click)="addWater(500)">+500 ml</ion-button>
+      </div>
     </ion-card>
 
     <!-- redukcja -->

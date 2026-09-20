@@ -9,7 +9,6 @@ import {
   IonCard,
   IonCardContent,
   IonCardHeader,
-  IonCardSubtitle,
   IonCardTitle,
   IonContent,
   IonHeader,
@@ -19,9 +18,7 @@ import {
   IonItemOptions,
   IonItemSliding,
   IonLabel,
-  IonList,
   IonNote,
-  IonProgressBar,
   IonRefresher,
   IonRefresherContent,
   IonSpinner,
@@ -33,7 +30,7 @@ import {
   ViewWillEnter,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircleOutline, checkmarkCircle, ellipseOutline, waterOutline } from 'ionicons/icons';
+import { add, addCircleOutline, arrowUndoOutline, checkmark, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline } from 'ionicons/icons';
 import { BodyStore } from '../../core/body.store';
 import { DiaryStore } from '../../core/diary.store';
 import { MealPlanItemRow, MealSlot } from '../../core/database.types';
@@ -41,7 +38,7 @@ import { todayIso } from '../../core/nutrition';
 import { PlanStore } from '../../core/plan.store';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
-import { TREND_LABELS, signed } from '../../shared/labels';
+import { SLOT_ICONS, TREND_LABELS, signed } from '../../shared/labels';
 
 @Component({
   selector: 'app-today',
@@ -56,10 +53,8 @@ import { TREND_LABELS, signed } from '../../shared/labels';
     IonRefresherContent,
     IonCard,
     IonCardHeader,
-    IonCardSubtitle,
     IonCardTitle,
     IonCardContent,
-    IonList,
     IonItem,
     IonItemSliding,
     IonItemOptions,
@@ -69,7 +64,6 @@ import { TREND_LABELS, signed } from '../../shared/labels';
     IonBadge,
     IonButton,
     IonIcon,
-    IonProgressBar,
     IonText,
     IonSpinner,
   ],
@@ -79,7 +73,7 @@ import { TREND_LABELS, signed } from '../../shared/labels';
 export class TodayPage implements ViewWillEnter {
   protected readonly body = inject(BodyStore);
   protected readonly diary = inject(DiaryStore);
-  private readonly plan = inject(PlanStore);
+  protected readonly plan = inject(PlanStore);
   private readonly recipes = inject(RecipeStore);
   private readonly router = inject(Router);
   private readonly sheet = inject(ActionSheetController);
@@ -88,6 +82,7 @@ export class TodayPage implements ViewWillEnter {
 
   protected readonly labels = TREND_LABELS;
   protected readonly slotLabels = SLOT_LABELS;
+  protected readonly slotIcons = SLOT_ICONS;
   protected readonly signed = signed;
   protected readonly round = Math.round;
   protected readonly ringLength = 2 * Math.PI * 52;
@@ -115,6 +110,7 @@ export class TodayPage implements ViewWillEnter {
   protected readonly meals = computed(() => {
     const byId = this.recipes.byId();
     const entries = this.diary.bySlot();
+    const targets = this.plan.slotTargets();
     return SLOTS.map((slot) => {
       const item = this.planned().find((p) => p.slot === slot) ?? null;
       const recipe = item ? byId.get(item.recipe_id) ?? null : null;
@@ -123,6 +119,7 @@ export class TodayPage implements ViewWillEnter {
       return {
         slot,
         entries: logged,
+        targetKcal: targets?.[slot] ?? null,
         kcal: logged.reduce((s, e) => s + e.kcal, 0),
         planned: item && recipe && !plannedEaten ? { item, recipe, kcal: Math.round(recipe.kcal * Number(item.portion_factor)) } : null,
       };
@@ -131,8 +128,15 @@ export class TodayPage implements ViewWillEnter {
 
   protected readonly waterGoal = computed(() => this.body.profile()?.water_goal_ml ?? 3000);
 
+  /** Szklanki po 250 ml: pełne na początku, puste do końca celu. */
+  protected readonly glasses = computed(() => {
+    const total = Math.ceil(this.waterGoal() / 250);
+    const full = Math.round(this.diary.waterMl() / 250);
+    return Array.from({ length: Math.max(total, full) }, (_, i) => i < full);
+  });
+
   constructor() {
-    addIcons({ addCircleOutline, checkmarkCircle, ellipseOutline, waterOutline });
+    addIcons({ add, addCircleOutline, arrowUndoOutline, checkmark, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline });
   }
 
   ionViewWillEnter(): void {
