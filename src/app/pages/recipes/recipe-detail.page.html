@@ -53,6 +53,20 @@
         <div class="macro carbs"><strong>{{ s.carbs }} g</strong> węglow.</div>
         <div class="macro fat"><strong>{{ s.fat }} g</strong> tłuszcz</div>
       </div>
+      @if (slotBudget(); as b) {
+        <p class="fit">
+          @if (factor() !== 1) {
+            Porcja dopasowana do posiłku <strong>{{ slotLabels[chosenSlot()].toLowerCase() }}</strong>:
+            {{ s.kcal }} kcal z {{ b.left }} kcal, które Ci tam zostały.
+            <button type="button" class="link" (click)="resetPortion()">Pokaż oryginalną porcję</button>
+          } @else {
+            W posiłku <strong>{{ slotLabels[chosenSlot()].toLowerCase() }}</strong> zostało Ci {{ b.left }} kcal.
+            @if (suggested() && suggested() !== 1) {
+              <button type="button" class="link" (click)="usePortion(suggested()!)">Dopasuj porcję</button>
+            }
+          }
+        </p>
+      }
       @if (d.recipe.servings > 1) {
         <p class="note">Przepis jest na {{ d.recipe.servings }} porcje – składniki poniżej przeliczone na Twój talerz.</p>
       }

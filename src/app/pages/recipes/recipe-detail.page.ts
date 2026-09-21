@@ -25,6 +25,7 @@ import {
 import { addIcons } from 'ionicons';
 import { addOutline, heart, heartOutline, removeOutline, thumbsDown, thumbsDownOutline } from 'ionicons/icons';
 import { DiaryStore } from '../../core/diary.store';
+import { PlanStore } from '../../core/plan.store';
 import { MealSlot } from '../../core/database.types';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
@@ -59,6 +60,7 @@ import { todayIso } from '../../core/nutrition';
 export class RecipeDetailPage {
   private readonly recipes = inject(RecipeStore);
   private readonly diary = inject(DiaryStore);
+  private readonly plan = inject(PlanStore);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastController);
 
@@ -85,8 +87,35 @@ export class RecipeDetailPage {
   });
 
   protected readonly summary = computed(() => this.recipes.byId().get(this.id()) ?? null);
-  protected readonly factor = computed(() => this.portion() ?? (Number.isFinite(this.servings()) ? this.servings() : 1));
   protected readonly chosenSlot = computed(() => this.targetSlot() ?? this.slot() ?? this.data.value()?.recipe.slot ?? 'lunch');
+
+  /** Ile kcal zostało jeszcze w tym posiłku (cel slotu minus to, co już zjedzone). */
+  protected readonly slotBudget = computed(() => {
+    const target = this.plan.slotTargets()?.[this.chosenSlot()];
+    if (!target) return null;
+    const eaten = (this.diary.bySlot().get(this.chosenSlot()) ?? []).reduce((s, e) => s + e.kcal, 0);
+    return { target, eaten, left: Math.max(0, target - eaten) };
+  });
+
+  /**
+   * Porcja dopasowana do posiłku: tyle przepisu, żeby wyszło mniej więcej tyle kcal,
+   * ile zostało w tym posiłku. Trzymamy się zakresu 0,5–2 porcji, żeby nie wychodziły absurdy.
+   */
+  protected readonly suggested = computed(() => {
+    const budget = this.slotBudget();
+    const kcal = this.summary()?.kcal ?? this.data.value()?.recipe.kcal;
+    if (!budget || !kcal || budget.left < 50) return null;
+    const raw = budget.left / kcal;
+    return Math.min(2, Math.max(0.5, Math.round(raw * 20) / 20));
+  });
+
+  protected readonly factor = computed(() => {
+    if (this.portion() !== null) return this.portion()!;
+    // porcja z planu (?servings=) ma pierwszeństwo, potem dopasowanie do posiłku
+    const fromPlan = Number.isFinite(this.servings()) ? this.servings() : 1;
+    if (fromPlan !== 1) return fromPlan;
+    return this.slot() ? this.suggested() ?? 1 : 1;
+  });
 
   protected readonly scaled = computed(() => {
     const d = this.data.value();
@@ -109,7 +138,17 @@ export class RecipeDetailPage {
   });
 
   constructor() {
+    // budżet posiłku liczymy z dzisiejszego dziennika
+    if (this.diary.date() !== todayIso() || !this.diary.loaded()) void this.diary.load(todayIso()).catch(() => undefined);
     addIcons({ heart, heartOutline, thumbsDown, thumbsDownOutline, addOutline, removeOutline });
+  }
+
+  usePortion(value: number): void {
+    this.portion.set(value);
+  }
+
+  resetPortion(): void {
+    this.portion.set(1);
   }
 
   changePortion(delta: number): void {

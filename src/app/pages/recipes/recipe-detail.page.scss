@@ -95,3 +95,23 @@ ion-note {
   flex-direction: column;
   gap: 12px;
 }
+
+.fit {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--mv-primary-soft);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ion-color-primary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
