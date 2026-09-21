@@ -121,13 +121,14 @@ export class TodayPage implements ViewWillEnter {
       const item = this.planned().find((p) => p.slot === slot) ?? null;
       const recipe = item ? byId.get(item.recipe_id) ?? null : null;
       const logged = entries.get(slot) ?? [];
-      const plannedEaten = !!item && logged.some((e) => e.recipe_id === item.recipe_id);
+      // cokolwiek zjedzonego w tym posiłku znaczy, że plan jest już nieaktualny
+      const done = logged.length > 0;
       return {
         slot,
         entries: logged,
         targetKcal: targets?.[slot] ?? null,
         kcal: logged.reduce((s, e) => s + e.kcal, 0),
-        planned: item && recipe && !plannedEaten ? { item, recipe, kcal: Math.round(recipe.kcal * Number(item.portion_factor)) } : null,
+        planned: item && recipe && !done ? { item, recipe, kcal: Math.round(recipe.kcal * Number(item.portion_factor)) } : null,
       };
     });
   });

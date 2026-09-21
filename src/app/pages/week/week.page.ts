@@ -24,6 +24,7 @@ import {
   IonTitle,
   IonToolbar,
   ToastController,
+  ViewWillEnter,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline, chevronForwardOutline, lockClosed, moonOutline, nutritionOutline, restaurantOutline, shuffleOutline, sparkles, sunnyOutline } from 'ionicons/icons';
@@ -66,7 +67,7 @@ const DAY_NAMES = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', '
   templateUrl: './week.page.html',
   styleUrl: './week.page.scss',
 })
-export class WeekPage {
+export class WeekPage implements ViewWillEnter {
   protected readonly plan = inject(PlanStore);
   protected readonly recipes = inject(RecipeStore);
   protected readonly body = inject(BodyStore);
@@ -82,6 +83,8 @@ export class WeekPage {
   /** komórka, dla której wybieramy zamiennik */
   protected readonly swapping = signal<MealPlanItemRow | null>(null);
   protected readonly swapQuery = signal('');
+  /** true, gdy użytkownik sam przeszedł strzałkami na inny tydzień */
+  private manualWeek = false;
 
   protected readonly days = computed(() => {
     const byId = this.recipes.byId();
@@ -131,17 +134,39 @@ export class WeekPage {
       });
   });
 
+  ionViewWillEnter(): void {
+    void this.refresh();
+  }
+
+  /** Pilnuje, żeby po wejściu był widoczny bieżący tydzień, i układa go, jeśli jeszcze nie istnieje. */
+  private async refresh(): Promise<void> {
+    const current = mondayOf(this.body.today());
+    if (this.manualWeek && this.plan.weekStart() !== current) return;
+    try {
+      await this.recipes.load();
+      if (this.plan.weekStart() !== current || !this.plan.plan()) await this.plan.loadWeek(current);
+      if (!this.hasPlan() && this.body.currentTarget() && this.recipes.recipes().length) {
+        await this.plan.generate();
+        await this.showToast('Ułożyłem jadłospis na nowy tydzień. Możesz zamieniać posiłki.');
+      }
+    } catch (e) {
+      await this.showToast(errorMessage(e), 'danger');
+    }
+  }
+
   constructor() {
     addIcons({ chevronBackOutline, chevronForwardOutline, lockClosed, shuffleOutline, sparkles, sunnyOutline, nutritionOutline, restaurantOutline, moonOutline });
     void this.init();
   }
 
   private async init(): Promise<void> {
-    await Promise.all([this.recipes.load(), this.plan.loadWeek(mondayOf(this.body.today()))]);
+    await this.refresh();
   }
 
   async changeWeek(delta: number): Promise<void> {
-    await this.plan.loadWeek(addDays(this.plan.weekStart(), 7 * delta));
+    const next = addDays(this.plan.weekStart(), 7 * delta);
+    this.manualWeek = next !== mondayOf(this.body.today());
+    await this.plan.loadWeek(next);
   }
 
   async generate(): Promise<void> {
