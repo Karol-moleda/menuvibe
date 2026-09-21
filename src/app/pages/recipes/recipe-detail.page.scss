@@ -115,3 +115,28 @@ ion-note {
   text-decoration: underline;
   cursor: pointer;
 }
+
+.hint-item {
+  --min-height: 32px;
+
+  p {
+    font-size: 0.78rem;
+  }
+}
+
+.swap-head,
+.swap-foot {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ion-color-medium);
+}
+
+.swap-foot {
+  font-size: 0.78rem;
+}
+
+.swap-grams {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}

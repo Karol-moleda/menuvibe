@@ -33,7 +33,7 @@
                 "input": "public"
               },
               {
-                "glob": "recipes.json",
+                "glob": "*.json",
                 "input": "data",
                 "output": "data"
               },

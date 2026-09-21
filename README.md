@@ -12,6 +12,7 @@ Stack: Angular 22 + Ionic 9 + Capacitor 8, backend Supabase (Postgres, Auth, Edg
 | `src/app/pages` | Ekrany (zakładki: Dziś, Tydzień, Przepisy, Ruch, Profil; czat pod przyciskiem ✦) |
 | `supabase/migrations` | Schemat bazy z RLS |
 | `supabase/functions` | Edge Functions (czat z Claude – etap 5) |
+| `data/foods.json` | Tabela ok. 120 produktów (kcal i makro na 100 g) do liczenia zamienników |
 | `data/recipes.json` | 248 przepisów wyciągniętych z PDF-ów dietetyczek |
 | `tools/pdf-import` | Parser PDF → `recipes.json` (Python + pdfplumber) |
 | `android` | Projekt Android Studio (Capacitor) |
@@ -101,6 +102,14 @@ i `AI_DAILY_LIMIT=40` (dzienny limit pytań). Testy logiki funkcji: `deno test s
 Źródła: Frankenfield i in. 2005 (dokładność wzorów BMR), FAO/WHO/UNU 2001 (PAL),
 Compendium of Physical Activities (METy), Hall i in. / NIDDK Body Weight Planner (bilans energii,
 adaptacja metaboliczna).
+
+## Zamienniki składników
+
+W przepisie dotknięcie składnika pokazuje produkty z tej samej grupy (owoce, kasze, nabiał, mięso i ryby…)
+wraz z gramaturą przeliczoną tak, żeby zgadzały się kalorie: `gramy × kcal/100 g oryginału ÷ kcal/100 g zamiennika`,
+zaokrąglone do 5 g. Przy każdej pozycji widać różnicę białka, węglowodanów i tłuszczu. Dane w `data/foods.json`.
+
+Miar domowych („2 łyżki”) nie pokazujemy – wszystko ważymy.
 
 ## Testy
 

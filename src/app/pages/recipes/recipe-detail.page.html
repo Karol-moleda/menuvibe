@@ -74,16 +74,21 @@
 
     <ion-list>
       <ion-list-header><ion-label>Składniki</ion-label></ion-list-header>
+      <ion-item lines="none" class="hint-item">
+        <ion-label color="medium" class="ion-text-wrap">
+          <p>Dotknij składnika, żeby zobaczyć zamienniki i ile ich wziąć.</p>
+        </ion-label>
+      </ion-item>
       @for (i of s.ingredients; track i.id) {
         @if (i.grp && ($first || s.ingredients[$index - 1].grp !== i.grp)) {
           <ion-item lines="none" class="group"><ion-label>{{ i.grp }}</ion-label></ion-item>
         }
-        <ion-item>
+        <ion-item button [detail]="false" (click)="showSwaps(i)">
           <ion-label class="ion-text-wrap">{{ i.name }}</ion-label>
           <ion-note slot="end">
             {{ i.scaledAmount | number: '1.0-1' }} {{ i.unit }}
-            @if (i.showHousehold && i.household) {
-              <br /><small>{{ i.household }}</small>
+            @if (i.hasSwaps) {
+              <ion-icon name="swap-horizontal-outline" aria-label="Zamienniki" />
             }
           </ion-note>
         </ion-item>
@@ -108,4 +113,43 @@
       <ion-button expand="block" [disabled]="saving()" (click)="addToDiary()">Zjadłem – dodaj do dziennika</ion-button>
     </div>
   }
+
+  <!-- zamienniki składnika -->
+  <ion-modal [isOpen]="swapFor() !== null" (didDismiss)="swapFor.set(null)" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.75, 1]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Zamienniki</ion-title>
+          <ion-buttons slot="end"><ion-button (click)="swapFor.set(null)">Zamknij</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        @if (swapFor(); as sw) {
+          <p class="swap-head ion-padding">
+            Zamiast <strong>{{ sw.grams }} g</strong> produktu „{{ sw.name }}” ({{ sw.kcal }} kcal) możesz wziąć:
+          </p>
+          <ion-list>
+            @for (o of swapOptions(); track o.food.name) {
+              <ion-item lines="inset">
+                <ion-label class="ion-text-wrap">
+                  <h3>{{ o.food.name }}</h3>
+                  <p>
+                    B {{ signedG(o.proteinDiff) }} · W {{ signedG(o.carbsDiff) }} · T {{ signedG(o.fatDiff) }} względem oryginału
+                  </p>
+                </ion-label>
+                <ion-note slot="end" class="swap-grams">{{ o.grams }} g</ion-note>
+              </ion-item>
+            } @empty {
+              <ion-item lines="none">
+                <ion-label color="medium" class="ion-text-wrap">
+                  <p>Nie mam w tabeli zamienników dla tego składnika. Zapytaj o niego na czacie – Claude podpowie.</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+          <p class="swap-foot ion-padding">Gramatura dobrana tak, żeby kalorie się zgadzały. Różnice makro widać przy każdej pozycji.</p>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

@@ -68,7 +68,7 @@ export function systemPrompt(ctx: DayContext, slot: MealSlot | null): string {
     'Zasady propozycji:',
     '- Każdy przepis zwracaj narzędziem propose_recipe (1–3 propozycje), a w tekście tylko krótko je zapowiedz. Nie powtarzaj w tekście składników ani kroków.',
     '- Jeśli użytkownik poda składniki, które ma, opieraj przepis na nich; dodatki ogranicz do podstaw (przyprawy, oliwa, pieczywo).',
-    '- Produkty dostępne w polskich sklepach (Lidl, Biedronka). Gramatury w gramach, surowe i przed obróbką, miara domowa w nawiasie.',
+    '- Produkty dostępne w polskich sklepach (Lidl, Biedronka). Gramatury podawaj wyłącznie w gramach, surowe i przed obróbką – użytkownik waży wszystko, miar domowych („łyżka”, „szklanka”) nie używaj.',
     '- Makroskładniki licz rzetelnie z typowych tabel wartości odżywczych; kcal ≈ 4·B + 4·W + 9·T. Wartości podawaj na 1 porcję.',
     '- Przy redukcji stawiaj na dużo białka i warzyw. Proste kroki, najwyżej 6.',
     '- Nie dawaj porad medycznych; przy chorobach odsyłaj do dietetyczki lub lekarza. Nie proponuj schodzenia poniżej celu kalorii.',
@@ -95,7 +95,6 @@ export const RECIPE_TOOL = {
           properties: {
             name: { type: 'string' },
             grams: { type: 'number', description: 'Ilość na cały przepis w gramach' },
-            household: { type: 'string', description: 'Miara domowa, np. „2 łyżki”' },
           },
           required: ['name', 'grams'],
         },

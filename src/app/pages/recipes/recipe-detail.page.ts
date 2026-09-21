@@ -18,14 +18,16 @@ import {
   IonSelectOption,
   IonSpinner,
   IonText,
+  IonModal,
   IonTitle,
   IonToolbar,
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addOutline, heart, heartOutline, removeOutline, thumbsDown, thumbsDownOutline } from 'ionicons/icons';
+import { addOutline, heart, heartOutline, removeOutline, swapHorizontalOutline, thumbsDown, thumbsDownOutline } from 'ionicons/icons';
 import { DiaryStore } from '../../core/diary.store';
 import { PlanStore } from '../../core/plan.store';
+import { Food, FoodStore, Swap } from '../../core/foods';
 import { MealSlot } from '../../core/database.types';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
@@ -37,6 +39,7 @@ import { todayIso } from '../../core/nutrition';
     DecimalPipe,
     IonHeader,
     IonToolbar,
+    IonModal,
     IonTitle,
     IonButtons,
     IonBackButton,
@@ -61,6 +64,7 @@ export class RecipeDetailPage {
   private readonly recipes = inject(RecipeStore);
   private readonly diary = inject(DiaryStore);
   private readonly plan = inject(PlanStore);
+  protected readonly foodStore = inject(FoodStore);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastController);
 
@@ -74,6 +78,8 @@ export class RecipeDetailPage {
   protected readonly slotLabels = SLOT_LABELS;
 
   protected readonly portion = signal<number | null>(null);
+  /** składnik, dla którego pokazujemy zamienniki */
+  protected readonly swapFor = signal<{ name: string; grams: number; kcal: number; food: Food } | null>(null);
   protected readonly targetSlot = signal<MealSlot | null>(null);
   protected readonly saving = signal(false);
 
@@ -129,18 +135,35 @@ export class RecipeDetailPage {
       protein: Math.round(r.protein_g * f),
       carbs: Math.round(r.carbs_g * f),
       fat: Math.round(r.fat_g * f),
-      ingredients: d.ingredients.map((i) => ({
-        ...i,
-        scaledAmount: Math.round(Number(i.amount) * perPlate * (Number(i.amount) < 10 ? 10 : 1)) / (Number(i.amount) < 10 ? 10 : 1),
-        showHousehold: Math.abs(perPlate - 1) < 0.01,
-      })),
+      ingredients: d.ingredients.map((i) => {
+        const amount = Math.round(Number(i.amount) * perPlate * (Number(i.amount) < 10 ? 10 : 1)) / (Number(i.amount) < 10 ? 10 : 1);
+        return { ...i, scaledAmount: amount, hasSwaps: i.unit === 'g' && this.foodStore.match(i.name) !== null };
+      }),
     };
   });
+
+  protected readonly swapOptions = computed<Swap[]>(() => {
+    const sw = this.swapFor();
+    return sw ? this.foodStore.swaps(sw.food, sw.grams) : [];
+  });
+
+  protected signedG(v: number): string {
+    return `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v).toFixed(1).replace('.', ',')} g`;
+  }
+
+  /** Otwiera listę zamienników dla składnika (gramatura już przeliczona na Twoją porcję). */
+  showSwaps(i: { name: string; scaledAmount: number; unit: string }): void {
+    const food = this.foodStore.match(i.name);
+    if (!food || i.unit !== 'g') return;
+    const grams = Math.round(i.scaledAmount);
+    this.swapFor.set({ name: i.name, grams, kcal: Math.round((food.kcal * grams) / 100), food });
+  }
 
   constructor() {
     // budżet posiłku liczymy z dzisiejszego dziennika
     if (this.diary.date() !== todayIso() || !this.diary.loaded()) void this.diary.load(todayIso()).catch(() => undefined);
-    addIcons({ heart, heartOutline, thumbsDown, thumbsDownOutline, addOutline, removeOutline });
+    void this.foodStore.load().catch(() => undefined);
+    addIcons({ heart, heartOutline, thumbsDown, thumbsDownOutline, addOutline, removeOutline, swapHorizontalOutline });
   }
 
   usePortion(value: number): void {
