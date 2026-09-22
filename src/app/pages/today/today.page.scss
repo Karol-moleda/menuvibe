@@ -167,14 +167,51 @@
 .planned {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin: 0 12px 12px;
   padding: 10px 12px;
   border: 1.5px dashed var(--ion-border-color);
   border-radius: 14px;
+}
 
-  ion-button {
-    flex-shrink: 0;
+/* kółko do odhaczenia – celowo bez zieleni, żeby nie wyglądało na zrobione */
+.check {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--ion-color-medium);
+  font: inherit;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1.6rem;
+  }
+
+  span {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.planned .thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+
+  span {
+    display: block;
+    height: 100%;
   }
 }
 

@@ -28,6 +28,7 @@ import { addOutline, heart, heartOutline, removeOutline, swapHorizontalOutline, 
 import { DiaryStore } from '../../core/diary.store';
 import { PlanStore } from '../../core/plan.store';
 import { Food, FoodStore, Swap } from '../../core/foods';
+import { RecipePhotoComponent } from '../../shared/recipe-photo';
 import { MealSlot } from '../../core/database.types';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
@@ -39,6 +40,7 @@ import { todayIso } from '../../core/nutrition';
     DecimalPipe,
     IonHeader,
     IonToolbar,
+    RecipePhotoComponent,
     IonModal,
     IonTitle,
     IonButtons,

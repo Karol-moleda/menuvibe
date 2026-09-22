@@ -92,15 +92,16 @@
 
         @if (meal.planned; as pl) {
           <div class="planned">
+            <app-recipe-photo class="thumb" [slug]="pl.recipe.slug"><span></span></app-recipe-photo>
             <button type="button" class="planned-main" (click)="openPlanned(pl.item)">
-              <span class="tag">Plan</span>
+              <span class="tag">Do zjedzenia</span>
               <span class="planned-name">{{ pl.recipe.name }}</span>
               <span class="planned-kcal">{{ pl.kcal }} kcal</span>
             </button>
-            <ion-button size="small" [disabled]="busy()" (click)="eatPlanned(pl)">
-              <ion-icon slot="start" name="checkmark" />
-              Zjadłem
-            </ion-button>
+            <button type="button" class="check" [disabled]="busy()" (click)="eatPlanned(pl)" aria-label="Odhacz – zjedzone">
+              <ion-icon name="ellipse-outline" aria-hidden="true" />
+              <span>odhacz</span>
+            </button>
           </div>
         }
 

@@ -14,7 +14,8 @@ Stack: Angular 22 + Ionic 9 + Capacitor 8, backend Supabase (Postgres, Auth, Edg
 | `supabase/functions` | Edge Functions (czat z Claude – etap 5) |
 | `data/foods.json` | Tabela ok. 120 produktów (kcal i makro na 100 g) do liczenia zamienników |
 | `data/recipes.json` | 248 przepisów wyciągniętych z PDF-ów dietetyczek |
-| `tools/pdf-import` | Parser PDF → `recipes.json` (Python + pdfplumber) |
+| `tools/pdf-import` | Parser PDF → `recipes.json` (Python + pdfplumber) oraz `images.py` (zdjęcia potraw) |
+| `public/img/recipes` | Zdjęcia potraw ze zdjęć w PDF-ach, nazwane slugiem przepisu |
 | `android` | Projekt Android Studio (Capacitor) |
 
 ## Pierwsze uruchomienie

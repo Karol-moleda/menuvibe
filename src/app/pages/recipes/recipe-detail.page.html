@@ -24,6 +24,7 @@
     <ion-text color="danger"><p class="ion-padding">Nie udało się wczytać przepisu.</p></ion-text>
   } @else if (data.value(); as d) {
     @let s = scaled()!;
+    <app-recipe-photo class="cover" [slug]="d.recipe.slug"><span></span></app-recipe-photo>
     <section class="hero ion-padding">
       <ion-badge color="light">{{ slotLabels[d.recipe.slot] }}</ion-badge>
       @if (d.recipe.macros_estimated) {

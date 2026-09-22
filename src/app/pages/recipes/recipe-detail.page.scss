@@ -1,3 +1,14 @@
+.cover {
+  height: 200px;
+  margin: 0 16px;
+  border-radius: var(--mv-radius);
+
+  span {
+    display: block;
+    height: 100%;
+  }
+}
+
 .center {
   display: flex;
   justify-content: center;

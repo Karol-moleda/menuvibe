@@ -60,9 +60,11 @@
         <ion-list lines="inset">
           @for (m of day.meals; track m.slot) {
             <ion-item button [detail]="false" (click)="openMeal(m)">
-              <span class="slot-icon" [class]="m.slot" slot="start">
-                <ion-icon [name]="slotIcons[m.slot]" aria-hidden="true" />
-              </span>
+              <app-recipe-photo class="thumb" [slug]="m.recipe?.slug" slot="start">
+                <span class="slot-icon" [class]="m.slot">
+                  <ion-icon [name]="slotIcons[m.slot]" aria-hidden="true" />
+                </span>
+              </app-recipe-photo>
               <ion-label class="ion-text-wrap">
                 <p class="slot">
                   {{ slotLabels[m.slot] }}

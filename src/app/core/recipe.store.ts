@@ -40,6 +40,9 @@ export class RecipeStore {
   readonly importing = signal(false);
   private loading: Promise<void> | null = null;
 
+  /** recipe_id -> nazwy składników (do wyszukiwania „kurczak”) */
+  readonly ingredientIndex = signal<Map<string, string>>(new Map());
+
   readonly byId = computed(() => new Map(this.recipes().map((r) => [r.id, r])));
   readonly forPlanner = computed<PlannerRecipe[]>(() =>
     this.recipes().map((r) => ({ id: r.id, slot: r.slot, kcal: r.kcal, rating: r.rating })),
@@ -56,9 +59,25 @@ export class RecipeStore {
       }
       this.recipes.set(rows);
       this.loaded.set(true);
+      void this.loadIngredientIndex().catch(() => undefined);
     })();
     this.loading.catch(() => (this.loading = null));
     return this.loading;
+  }
+
+  /** Jednorazowo wczytuje nazwy wszystkich składników, żeby dało się szukać po nich w liście przepisów. */
+  private async loadIngredientIndex(): Promise<void> {
+    if (this.ingredientIndex().size) return;
+    const map = new Map<string, string>();
+    const pageSize = 1000;
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await this.db.from('recipe_ingredients').select('recipe_id,name').range(from, from + pageSize - 1);
+      if (error) throw error;
+      const rows = (data ?? []) as { recipe_id: string; name: string }[];
+      for (const r of rows) map.set(r.recipe_id, `${map.get(r.recipe_id) ?? ''} ${r.name}`);
+      if (rows.length < pageSize) break;
+    }
+    this.ingredientIndex.set(map);
   }
 
   async ingredients(recipeId: string): Promise<RecipeIngredientRow[]> {

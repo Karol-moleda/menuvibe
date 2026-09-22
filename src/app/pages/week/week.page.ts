@@ -33,6 +33,7 @@ import { MealPlanItemRow } from '../../core/database.types';
 import { addDays } from '../../core/nutrition';
 import { PlanStore } from '../../core/plan.store';
 import { SLOT_ICONS } from '../../shared/labels';
+import { RecipePhotoComponent } from '../../shared/recipe-photo';
 import { SLOTS, SLOT_LABELS, alternatives, factorFor, mondayOf, weekDates } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
 
@@ -49,6 +50,7 @@ const DAY_NAMES = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', '
     IonButton,
     IonIcon,
     IonContent,
+    RecipePhotoComponent,
     IonFab,
     IonFabButton,
     IonCard,

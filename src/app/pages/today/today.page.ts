@@ -32,7 +32,7 @@ import {
   ViewWillEnter,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { add, addCircleOutline, arrowUndoOutline, checkmark, chevronForwardOutline, footstepsOutline, sparkles, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline } from 'ionicons/icons';
+import { add, addCircleOutline, arrowUndoOutline, checkmark, chevronForwardOutline, ellipseOutline, footstepsOutline, sparkles, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline } from 'ionicons/icons';
 import { ActivityStore } from '../../core/activity.store';
 import { BodyStore } from '../../core/body.store';
 import { DiaryStore } from '../../core/diary.store';
@@ -42,6 +42,7 @@ import { PlanStore } from '../../core/plan.store';
 import { SLOTS, SLOT_LABELS } from '../../core/planner';
 import { RecipeStore } from '../../core/recipe.store';
 import { SLOT_ICONS, TREND_LABELS, signed } from '../../shared/labels';
+import { RecipePhotoComponent } from '../../shared/recipe-photo';
 
 @Component({
   selector: 'app-today',
@@ -52,6 +53,7 @@ import { SLOT_ICONS, TREND_LABELS, signed } from '../../shared/labels';
     IonToolbar,
     IonTitle,
     IonContent,
+    RecipePhotoComponent,
     IonFab,
     IonFabButton,
     IonRefresher,
@@ -143,7 +145,7 @@ export class TodayPage implements ViewWillEnter {
   });
 
   constructor() {
-    addIcons({ add, addCircleOutline, arrowUndoOutline, checkmark, chevronForwardOutline, footstepsOutline, sparkles, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline });
+    addIcons({ add, addCircleOutline, arrowUndoOutline, checkmark, chevronForwardOutline, ellipseOutline, footstepsOutline, sparkles, checkmarkCircle, moonOutline, nutritionOutline, restaurantOutline, sunnyOutline, water, waterOutline });
   }
 
   ionViewWillEnter(): void {
